@@ -54,7 +54,7 @@ function renderPlaylist() {
     const list = document.getElementById('playlist');
     list.innerHTML = currentCourse.lessons.map((lesson, index) => {
         const isCompleted = completedLessons.includes(lesson.id);
-        const icon = lesson.type === 'text' ? 'book-open' : 'play-circle'; // أيقونة مختلفة
+        const icon = lesson.type === 'text' ? 'book-open' : 'play-circle'; 
         
         return `
         <button onclick="playLesson(${index})" class="w-full text-right p-3 rounded-xl flex items-center gap-3 hover:bg-slate-50 transition border border-transparent focus:border-emerald-500 group ${isCompleted ? 'bg-emerald-50/50' : ''}">
@@ -77,20 +77,26 @@ function playLesson(index) {
     
     const videoContainer = document.getElementById('video-container');
     const textViewer = document.getElementById('text-viewer');
+    const videoPlayer = document.getElementById('video-player');
     
     // إخفاء الكل الأول
     videoContainer.classList.add('hidden');
     textViewer.classList.add('hidden');
 
     if (lesson.type === 'text') {
-        // وضع القراءة
+        // وضع القراءة: لازم نوقف الفيديو عشان الصوت ميفضلش شغال
+        videoPlayer.src = ""; 
+        
         textViewer.classList.remove('hidden');
         document.getElementById('text-lesson-title').innerText = lesson.title;
         document.getElementById('text-lesson-content').innerHTML = lesson.content;
     } else {
         // وضع الفيديو
         videoContainer.classList.remove('hidden');
-        document.getElementById('video-player').src = lesson.url;
+        // بنحمل الفيديو بس لو هو مش شغال بالفعل عشان التوفير
+        if (!videoPlayer.src.includes(lesson.url)) {
+            videoPlayer.src = lesson.url;
+        }
     }
 
     // تسجيل الاكتمال
@@ -131,8 +137,10 @@ function updateProgress() {
 function initQuiz() {
     const quizArea = document.getElementById('quiz-area');
     if (!currentQuiz.length) {
-        // لو مفيش أسئلة محددة، خد أول 3
-        currentQuiz = currentCourse.quiz ? currentCourse.quiz.slice(0, 3) : [];
+        // نستخدم [... ] عشان نعمل نسخة ومنلخبطش الترتيب الأصلي في الداتا
+        const allQuestions = currentCourse.quiz ? [...currentCourse.quiz] : [];
+        // اختيار 3 أسئلة عشوائية
+        currentQuiz = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 3);
     }
 
     if(currentQuiz.length === 0) {
@@ -170,12 +178,14 @@ window.submitQuiz = function() {
         }
     });
 
+    // لازم يجاوب كله صح عشان ينجح (أو ممكن تخليها > 50% لو حابب)
     if (score === currentQuiz.length) { 
         alert(`مبروك! جاوبت ${score}/${currentQuiz.length} صح. 🎉`);
         finishCourse();
     } else {
-        alert(`جبت ${score}/${currentQuiz.length}. حاول تاني!`);
-        initQuiz();
+        alert(`جبت ${score}/${currentQuiz.length}. لازم تجاوب كل الأسئلة صح عشان تاخد الشهادة! حاول تاني 💪`);
+        // بنعيد تحميل الامتحان عشان يحاول تاني
+        initQuiz(); 
     }
 }
 
