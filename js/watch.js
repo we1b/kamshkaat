@@ -139,8 +139,8 @@ function initQuiz() {
     if (!currentQuiz.length) {
         // نستخدم [... ] عشان نعمل نسخة ومنلخبطش الترتيب الأصلي في الداتا
         const allQuestions = currentCourse.quiz ? [...currentCourse.quiz] : [];
-        // اختيار 3 أسئلة عشوائية
-        currentQuiz = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 3);
+        // اختيار 5 أسئلة عشوائية بدلاً من 3
+        currentQuiz = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 5);
     }
 
     if(currentQuiz.length === 0) {
@@ -178,12 +178,15 @@ window.submitQuiz = function() {
         }
     });
 
-    // لازم يجاوب كله صح عشان ينجح (أو ممكن تخليها > 50% لو حابب)
-    if (score === currentQuiz.length) { 
-        alert(`مبروك! جاوبت ${score}/${currentQuiz.length} صح. 🎉`);
+    // حساب النسبة المئوية
+    const percentage = (score / currentQuiz.length) * 100;
+
+    // النجاح من 75%
+    if (percentage >= 75) { 
+        alert(`مبروك! نتيجتك ${score}/${currentQuiz.length} (${percentage}%). 🎉\nتستاهل الشهادة يا بطل!`);
         finishCourse();
     } else {
-        alert(`جبت ${score}/${currentQuiz.length}. لازم تجاوب كل الأسئلة صح عشان تاخد الشهادة! حاول تاني 💪`);
+        alert(`جبت ${score}/${currentQuiz.length} (${percentage}%). لازم تجيب 75% على الأقل عشان تاخد الشهادة. حاول تاني 💪`);
         // بنعيد تحميل الامتحان عشان يحاول تاني
         initQuiz(); 
     }
