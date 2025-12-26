@@ -45,7 +45,6 @@ function initPlayerUI() {
     renderAttachments();
     updateProgress();
     
-    // تشغيل أول درس لو مفيش درس شغال حالياً
     if (currentCourse.lessons.length > 0 && !currentLessonId) {
         playLesson(0);
     }
@@ -60,7 +59,6 @@ function renderPlaylist() {
         if (lesson.type === 'text') icon = 'book-open';
         if (lesson.type === 'audio') icon = 'headphones';
         
-        // تلوين الدرس النشط
         const activeClass = isActive ? 'bg-emerald-50 border-emerald-500' : 'bg-white border-transparent hover:bg-slate-50';
         
         return `
@@ -77,7 +75,7 @@ function renderPlaylist() {
         `;
     }).join('');
 
-    // 👇 زرار الاختبار النهائي (في آخر القائمة زي ما طلبت)
+    // زرار الاختبار النهائي (موجود دائماً في آخر القائمة)
     html += `
         <div class="mt-6 pt-4 border-t border-slate-200">
             <button onclick="openQuizModal()" class="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-white p-4 rounded-xl flex items-center justify-between gap-3 shadow-md hover:shadow-lg transition transform hover:-translate-y-1">
@@ -87,7 +85,7 @@ function renderPlaylist() {
                     </div>
                     <div class="text-right">
                         <h4 class="font-black text-base">الاختبار النهائي</h4>
-                        <span class="text-xs text-yellow-50 opacity-90">جاهز للتحدي؟</span>
+                        <span class="text-xs text-yellow-50 opacity-90">متاح الآن</span>
                     </div>
                 </div>
                 <i data-lucide="chevron-left" class="w-5 h-5"></i>
@@ -103,8 +101,7 @@ function playLesson(index) {
     const lesson = currentCourse.lessons[index];
     currentLessonId = lesson.id;
     
-    // تحديث شكل القائمة عشان يبان الدرس النشط
-    renderPlaylist();
+    renderPlaylist(); // عشان نحدث اللون النشط
 
     const videoContainer = document.getElementById('video-container');
     const audioContainer = document.getElementById('audio-container');
@@ -113,7 +110,7 @@ function playLesson(index) {
     const videoPlayer = document.getElementById('video-player');
     const audioPlayer = document.getElementById('audio-player');
     
-    // إخفاء الكل وإيقاف المشغلات
+    // إخفاء الكل
     videoContainer.classList.add('hidden');
     audioContainer.classList.add('hidden');
     textViewer.classList.add('hidden');
@@ -121,13 +118,14 @@ function playLesson(index) {
     videoPlayer.src = "";
     audioPlayer.pause();
 
+    // عرض المحتوى حسب النوع
     if (lesson.type === 'text') {
         textViewer.classList.remove('hidden');
         document.getElementById('text-lesson-title').innerText = lesson.title;
         document.getElementById('text-lesson-content').innerHTML = lesson.content;
         document.querySelector('.flex-1').scrollTop = 0; 
         
-        // تسجيل القراءة تلقائياً عند الفتح (عشان نسهل عليك)
+        // تسجيل القراءة تلقائياً عشان منقاطعكش
         markLessonComplete(lesson.id);
     } 
     else if (lesson.type === 'audio') {
@@ -146,17 +144,14 @@ function playLesson(index) {
     }
 }
 
-// دالة الزرار اللي تحت الدرس النصي
+// دالة الزرار "التالي" (بدون أي رسائل)
 window.finishCurrentLesson = function() {
     if(currentLessonId) {
         markLessonComplete(currentLessonId);
-        // نقل هادئ للدرس التالي
+        // نقل للدرس التالي بهدوء
         const currentIndex = currentCourse.lessons.findIndex(l => l.id == currentLessonId);
         if (currentIndex < currentCourse.lessons.length - 1) {
             playLesson(currentIndex + 1);
-        } else {
-            // لو آخر درس، نفتحله المودال بتاع الامتحان كأنه اقتراح
-            openQuizModal();
         }
     }
 }
@@ -174,8 +169,7 @@ function markLessonComplete(lessonId) {
             progress: progress
         });
 
-        // تحديث القائمة عشان علامة الصح تظهر
-        renderPlaylist();
+        renderPlaylist(); // تحديث علامات الصح
         updateProgress();
     }
 }
@@ -206,7 +200,7 @@ function renderAttachments() {
     lucide.createIcons();
 }
 
-// --- منطق نافذة الاختبار (Quiz Modal) ---
+// --- نافذة الاختبار (بدون قيود وبزرار إغلاق) ---
 window.openQuizModal = function() {
     const quizArea = document.getElementById('quiz-questions-area');
     const modal = document.getElementById('quiz-modal');
@@ -247,7 +241,7 @@ window.openQuizModal = function() {
     });
 
     quizArea.innerHTML = html;
-    modal.classList.remove('hidden'); // إظهار النافذة
+    modal.classList.remove('hidden');
 }
 
 window.submitQuiz = function() {
@@ -264,20 +258,20 @@ window.submitQuiz = function() {
     });
 
     if (!allAnswered) {
-        alert("جاوب على كل الأسئلة عشان نعرف نطلع النتيجة 😉");
+        alert("جاوب على كل الأسئلة الأول 😉");
         return;
     }
 
     const percentage = (score / currentQuiz.length) * 100;
 
     if (percentage >= 75) { 
-        document.getElementById('quiz-modal').classList.add('hidden'); // إخفاء النافذة
+        document.getElementById('quiz-modal').classList.add('hidden');
         alert(`ألف مبروك! نتيجتك ${percentage}%. 🎉\nالشهادة جاهزة في لوحة التحكم.`);
         finishCourse();
     } else {
         alert(`نتيجتك ${percentage}%. محتاج 75% عشان الشهادة.\nجرب تاني! 💪`);
         currentQuiz = []; 
-        // بنسيب النافذة مفتوحة عشان يعيد المحاولة أو يقفلها
+        // هنسيب النافذة مفتوحة عشان يعيد أو يقفلها براحته
         openQuizModal(); 
     }
 }
