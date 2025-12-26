@@ -46,7 +46,9 @@ function initPlayerUI() {
     renderAttachments();
     updateProgress();
     
+    // تشغيل الدرس الأخير اللي وقف عنده أو الأول
     if (currentCourse.lessons.length > 0) {
+        // لو مفيش درس محدد، ابدأ بالأول
         playLesson(0);
     }
 }
@@ -73,18 +75,17 @@ function renderPlaylist() {
         `;
     }).join('');
 
-    // إضافة زرار الاختبار في آخر القائمة
-    const allDone = completedLessons.length === currentCourse.lessons.length;
+    // 👇 زرار الاختبار النهائي (مفتوح دائماً الآن)
     html += `
-        <button onclick="openQuizModal()" class="w-full text-right p-4 rounded-xl flex items-center gap-3 transition border border-transparent group ${allDone ? 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100' : 'bg-slate-100 opacity-70 cursor-not-allowed'} shadow-sm mb-2 mt-4">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${allDone ? 'bg-yellow-500 text-white' : 'bg-slate-300 text-slate-500'}">
+        <button onclick="openQuizModal()" class="w-full text-right p-4 rounded-xl flex items-center gap-3 transition border border-transparent bg-yellow-50 border-yellow-200 hover:bg-yellow-100 shadow-sm mb-2 mt-4 group">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-yellow-500 text-white">
                 <i data-lucide="award" class="w-5 h-5"></i>
             </div>
             <div class="flex-1">
                 <h4 class="font-bold text-sm text-slate-800">الاختبار النهائي</h4>
-                <span class="text-xs text-slate-500">${allDone ? 'جاهز للبدء' : 'مغلق (أكمل الدروس)'}</span>
+                <span class="text-xs text-slate-500">متاح الآن - ادخل وقت ما تحب</span>
             </div>
-            ${allDone ? '<i data-lucide="chevron-left" class="w-5 h-5 text-yellow-600"></i>' : '<i data-lucide="lock" class="w-4 h-4 text-slate-400"></i>'}
+            <i data-lucide="chevron-left" class="w-5 h-5 text-yellow-600"></i>
         </button>
     `;
 
@@ -125,7 +126,9 @@ function playLesson(index) {
     } 
     else {
         videoContainer.classList.remove('hidden');
-        videoPlayer.src = lesson.url;
+        if (!videoPlayer.src.includes(lesson.url)) {
+            videoPlayer.src = lesson.url;
+        }
         markLessonComplete(lesson.id);
     }
 }
@@ -135,7 +138,9 @@ window.finishCurrentLesson = function() {
         markLessonComplete(currentLessonId);
         const currentIndex = currentCourse.lessons.findIndex(l => l.id == currentLessonId);
         if (currentIndex < currentCourse.lessons.length - 1) {
-            playLesson(currentIndex + 1);
+            if(confirm("خلصت الدرس؟ عاش! 👏 تحب نفتح اللي بعده؟")) {
+                playLesson(currentIndex + 1);
+            }
         } else {
             alert("ألف مبروك! خلصت كل الدروس 🎉\nتقدر دلوقتي تدخل الاختبار من القائمة.");
         }
@@ -164,6 +169,10 @@ function updateProgress() {
     const progress = Math.round((completedLessons.length / currentCourse.lessons.length) * 100);
     document.getElementById('progress-text').innerText = `${progress}%`;
     document.getElementById('progress-bar').style.width = `${progress}%`;
+
+    // زرار الامتحان في الناف بار دايما ظاهر
+    const quizBtn = document.getElementById('take-quiz-btn');
+    if(quizBtn) quizBtn.classList.remove('hidden');
 }
 
 function renderAttachments() {
@@ -188,12 +197,8 @@ function renderAttachments() {
 
 // --- دوال الاختبار (Quiz Logic) ---
 window.openQuizModal = function() {
-    // التأكد من إنهاء الدروس
-    if (completedLessons.length < currentCourse.lessons.length) {
-        alert("لازم تخلص كل الدروس الأول يا بطل! 😅");
-        return;
-    }
-
+    // 👇 شيلنا شرط إنهاء الدروس، الامتحان مفتوح للكل
+    
     const quizArea = document.getElementById('quiz-questions-area');
     const modal = document.getElementById('quiz-modal');
     
@@ -255,13 +260,15 @@ window.submitQuiz = function() {
 
     const percentage = (score / currentQuiz.length) * 100;
 
-    if (percentage >= 80) { // شرط النجاح 80%
+    if (percentage >= 75) { 
         alert(`ألف مبروك! نتيجتك ${percentage}%. 🎉\nسيتم إصدار الشهادة الآن.`);
         document.getElementById('quiz-modal').classList.add('hidden');
         finishCourse();
     } else {
-        alert(`للاسف نتيجتك ${percentage}%. 😞\nالشرط هو 80% للنجاح.\nللأسف مضطرين نعيد الكورس من الأول عشان تثبت المعلومة!`);
-        resetCourseProgress();
+        alert(`للاسف نتيجتك ${percentage}%. 😞\nالشرط هو 75% للنجاح.\nحاول مرة تانية، الأسئلة ممكن تتغير!`);
+        currentQuiz = []; // إعادة تعيين الأسئلة عشان المحاولة الجاية تكون جديدة
+        document.getElementById('quiz-modal').classList.add('hidden');
+        // هنا شلت إعادة الكورس من الأول، عشان يدخل بمزاجه زي ما طلبت
     }
 }
 
@@ -271,17 +278,9 @@ function finishCourse() {
         status: 'completed',
         completedAt: new Date().toISOString()
     }).then(() => {
-        window.location.href = 'dashboard.html';
-    });
-}
-
-function resetCourseProgress() {
-    const user = firebase.auth().currentUser;
-    // تصفير التقدم وإعادة تحميل الصفحة
-    firebase.database().ref(`users/${user.uid}/enrolledCourses/${currentCourse.id}`).update({
-        progress: 0,
-        completedLessons: [] // فضينا المصفوفة
-    }).then(() => {
-        window.location.reload(); // ريفرش للصفحة عشان يبدأ من جديد
+        // 👇 هنا خلينا الطالب يفضل في الصفحة عشان لو عايز يراجع
+        if(confirm("تم تسجيل نجاحك في الكورس! 🎉\nتحب ترجع للوحة التحكم ولا تفضل هنا؟\n(OK = لوحة التحكم، Cancel = أفضل هنا)")) {
+            window.location.href = 'dashboard.html';
+        }
     });
 }

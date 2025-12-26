@@ -16,7 +16,7 @@
     <script src="js/auth.js"></script>
     <script src="js/kameshkah-data.js"></script>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-50 overflow-hidden">
     
     <!-- Navbar -->
     <nav class="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center fixed top-0 w-full z-50 h-16 shadow-sm">
@@ -29,6 +29,10 @@
             <div class="w-32 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                 <div id="progress-bar" class="h-full bg-emerald-500 w-0 transition-all duration-500"></div>
             </div>
+            <!-- زرار الامتحان موجود علطول دلوقتي -->
+            <button id="take-quiz-btn" onclick="openQuizModal()" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold px-3 py-2 rounded-lg transition shadow-lg flex items-center gap-1">
+                <i data-lucide="award" class="w-4 h-4"></i> ابدأ الاختبار
+            </button>
         </div>
     </nav>
 
@@ -91,17 +95,22 @@
         </div>
     </div>
 
-    <!-- نافذة الاختبار (Quiz Modal) - بدون زر خروج! -->
-    <div id="quiz-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-bounce-slow">
+    <!-- نافذة الاختبار (Quiz Modal Separated) -->
+    <div id="quiz-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md transition-opacity duration-300">
+        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden transform scale-100 transition-transform duration-300 flex flex-col max-h-[90vh]">
             <!-- هيدر النافذة -->
-            <div class="bg-yellow-500 p-6 text-white text-center">
-                <div class="mb-2"><i data-lucide="award" class="w-12 h-12 mx-auto"></i></div>
-                <h3 class="font-black text-3xl">الاختبار النهائي</h3>
-                <p class="text-yellow-50 font-bold text-sm mt-1">تنبيه: لن يمكنك الخروج حتى تنهي الاختبار!</p>
+            <div class="bg-emerald-600 p-6 text-white flex justify-between items-center">
+                <div>
+                    <h3 class="font-black text-2xl">الاختبار النهائي 🎓</h3>
+                    <p class="text-emerald-100 text-sm">جاوب 75% من الأسئلة صح عشان تاخد الشهادة</p>
+                </div>
+                <!-- زرار الخروج موجود لأنك طلبت الدخول بمزاجك، بس ممكن تشيله لو عايز إجبار -->
+                <button onclick="document.getElementById('quiz-modal').classList.add('hidden')" class="bg-white/20 p-2 rounded-full hover:bg-white/30 transition">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
             </div>
             
-            <!-- جسم النافذة -->
+            <!-- جسم النافذة (قابل للسكرول) -->
             <div id="quiz-questions-area" class="p-8 overflow-y-auto flex-1 space-y-8 bg-slate-50">
                 <!-- الأسئلة هتنزل هنا -->
             </div>
