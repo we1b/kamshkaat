@@ -1,6 +1,10 @@
 /* Path: js/dashboard.js */
 
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. تشغيل الأيقونات فوراً
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // 2. التحقق من حالة المستخدم
     firebase.auth().onAuthStateChanged((user) => {
         if (user) {
             fetchUserData(user);
@@ -10,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 3. تفعيل زرار الحفظ في البروفايل
     const profileForm = document.getElementById('profile-form');
     if (profileForm) {
         profileForm.addEventListener('submit', (e) => {
@@ -19,9 +24,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// --- دالة التبديل بين الأقسام (إصلاح الأزرار العطلانة) ---
+// لازم تكون window.showSection عشان الـ HTML يشوفها
+window.showSection = function(sectionId) {
+    // إخفاء كل الأقسام
+    document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
+    
+    // إظهار القسم المطلوب
+    const target = document.getElementById('section-' + sectionId);
+    if (target) {
+        target.classList.remove('hidden');
+        // تحديث الأيقونات لو فيه أيقونات جوه القسم ده لسه مظهرتش
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } else {
+        console.error(`Section not found: section-${sectionId}`);
+    }
+}
+
 let currentUserData = null;
 let currentFirebaseUser = null;
-let selectedRamadanDay = 1; // اليوم المختار افتراضياً
+let selectedRamadanDay = 1; 
 
 function fetchUserData(user) {
     currentFirebaseUser = user;
@@ -48,9 +70,13 @@ function fetchUserData(user) {
 }
 
 function updateDashboardUI(data, user) {
-    document.getElementById('user-name-display').innerText = data.username || user.displayName || "مستخدم كمشكاة";
-    document.getElementById('user-email-display').innerText = data.email || user.email;
-    document.getElementById('user-avatar').src = data.photoURL || user.photoURL || "images/ui/logo.png";
+    const nameEl = document.getElementById('user-name-display');
+    const emailEl = document.getElementById('user-email-display');
+    const avatarEl = document.getElementById('user-avatar');
+    
+    if(nameEl) nameEl.innerText = data.username || user.displayName || "مستخدم كمشكاة";
+    if(emailEl) emailEl.innerText = data.email || user.email;
+    if(avatarEl) avatarEl.src = data.photoURL || user.photoURL || "images/ui/logo.png";
     
     const pointsEl = document.getElementById('user-points');
     if(pointsEl) pointsEl.innerText = data.points || 0;
@@ -60,7 +86,9 @@ function updateDashboardUI(data, user) {
     if(editNameInput) editNameInput.value = data.username || user.displayName || "";
     if(editPhoneInput) editPhoneInput.value = data.phone || "";
 
-    loadEnrolledCourses(data.enrolledCourses);
+    if(data.enrolledCourses) {
+        loadEnrolledCourses(data.enrolledCourses);
+    }
 }
 
 function saveProfileChanges() {
@@ -145,7 +173,8 @@ function loadEnrolledCourses(enrolledCoursesData) {
                 </div>
             </div>
         `}).join('');
-        lucide.createIcons();
+        // تفعيل الأيقونات للعناصر الجديدة
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     } else {
         list.innerHTML = `
             <div class="text-center py-10 border-2 border-dashed border-emerald-100 rounded-3xl bg-white/40">
@@ -156,9 +185,11 @@ function loadEnrolledCourses(enrolledCoursesData) {
                 <a href="courses.html" class="mt-4 inline-block bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold text-sm hover:bg-emerald-700 transition">تصفح الكورسات</a>
             </div>
         `;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 }
 
+// دالة توليد الشهادة (Canvas)
 window.generateCertificate = function(courseName) {
     let defaultName = document.getElementById('user-name-display').innerText;
     let userName = prompt("اكتب الاسم اللي عايزه يظهر في الشهادة:", defaultName);
@@ -210,8 +241,9 @@ window.generateCertificate = function(courseName) {
    🌙 منطق تحدي رمضان (Ramadan Logic)
    -------------------------------------------------------- */
 function initRamadanTracker(user) {
-    // 1. توليد قائمة الأيام (30 يوم)
     const daysScroller = document.getElementById('ramadan-days-scroller');
+    if (!daysScroller) return; // لو العنصر مش موجود، اخرج
+
     daysScroller.innerHTML = '';
     
     for (let i = 1; i <= 30; i++) {
@@ -223,36 +255,46 @@ function initRamadanTracker(user) {
         daysScroller.appendChild(dayBtn);
     }
 
-    // 2. تحميل بيانات اليوم الأول (أو الحالي)
     selectRamadanDay(selectedRamadanDay, user);
 }
 
 function selectRamadanDay(day, user) {
     selectedRamadanDay = day;
-    document.getElementById('today-date').innerText = `اليوم ${day} رمضان`;
-    document.getElementById('selected-day-title').innerText = `إنجازات اليوم ${day}`;
+    const dateEl = document.getElementById('today-date');
+    const titleEl = document.getElementById('selected-day-title');
+    
+    if(dateEl) dateEl.innerText = `اليوم ${day} رمضان`;
+    if(titleEl) titleEl.innerText = `إنجازات اليوم ${day}`;
 
     // تحديث ستايل الأزرار
-    const buttons = document.getElementById('ramadan-days-scroller').children;
-    for (let btn of buttons) {
-        if (btn.innerText == day) {
-            btn.className = "shrink-0 w-12 h-12 rounded-full font-bold text-sm transition flex items-center justify-center border-2 bg-purple-600 text-white border-purple-600 shadow-md transform scale-110";
-        } else {
-            btn.className = "shrink-0 w-12 h-12 rounded-full font-bold text-sm transition flex items-center justify-center border-2 bg-white text-slate-500 border-slate-200 hover:border-purple-300";
+    const scroller = document.getElementById('ramadan-days-scroller');
+    if (scroller) {
+        const buttons = scroller.children;
+        for (let btn of buttons) {
+            if (btn.innerText == day) {
+                btn.className = "shrink-0 w-12 h-12 rounded-full font-bold text-sm transition flex items-center justify-center border-2 bg-purple-600 text-white border-purple-600 shadow-md transform scale-110";
+            } else {
+                btn.className = "shrink-0 w-12 h-12 rounded-full font-bold text-sm transition flex items-center justify-center border-2 bg-white text-slate-500 border-slate-200 hover:border-purple-300";
+            }
         }
     }
 
-    // جلب البيانات من فايربيس لليوم ده
     const db = firebase.database();
     db.ref(`users/${user.uid}/ramadanChallenge/day${day}`).once('value', (snapshot) => {
         const data = snapshot.val() || {};
         
-        // تعبئة الحقول
-        document.getElementById('quran-input').value = data.quran || '';
-        document.getElementById('azkar-check').checked = data.azkar || false;
-        document.getElementById('tarawih-check').checked = data.tarawih || false;
-        document.getElementById('tahajjud-check').checked = data.tahajjud || false;
-        document.getElementById('sunan-check').checked = data.sunan || false;
+        // تعبئة الحقول بأمان
+        const quranIn = document.getElementById('quran-input');
+        const azkarCheck = document.getElementById('azkar-check');
+        const tarawihCheck = document.getElementById('tarawih-check');
+        const tahajjudCheck = document.getElementById('tahajjud-check');
+        const sunanCheck = document.getElementById('sunan-check');
+
+        if(quranIn) quranIn.value = data.quran || '';
+        if(azkarCheck) azkarCheck.checked = data.azkar || false;
+        if(tarawihCheck) tarawihCheck.checked = data.tarawih || false;
+        if(tahajjudCheck) tahajjudCheck.checked = data.tahajjud || false;
+        if(sunanCheck) sunanCheck.checked = data.sunan || false;
     });
 }
 
@@ -265,14 +307,13 @@ window.saveRamadanDay = function() {
         tarawih: document.getElementById('tarawih-check').checked,
         tahajjud: document.getElementById('tahajjud-check').checked,
         sunan: document.getElementById('sunan-check').checked,
-        completed: true // علامة إن اليوم ده اتسجل فيه بيانات
+        completed: true 
     };
 
     const db = firebase.database();
     db.ref(`users/${currentFirebaseUser.uid}/ramadanChallenge/day${selectedRamadanDay}`).set(dayData)
         .then(() => {
             alert(`تم حفظ إنجاز اليوم ${selectedRamadanDay} يا بطل! 🌙✨`);
-            // ممكن هنا نحسب النقاط ونحدثها
         })
         .catch(err => {
             console.error(err);
