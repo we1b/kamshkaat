@@ -23,7 +23,7 @@ function checkEnrollment(userId, courseId) {
     const db = firebase.database();
     db.ref(`users/${userId}/enrolledCourses/${courseId}`).once('value', (snapshot) => {
         if (!snapshot.exists()) {
-            alert('لازم تشترك في الكورس الأول!');
+            // لو مش مشترك، وديه لصفحة التفاصيل
             window.location.href = `course-details.html?id=${courseId}&type=academy`;
         } else {
             const enrollmentData = snapshot.val();
@@ -46,9 +46,8 @@ function initPlayerUI() {
     renderAttachments();
     updateProgress();
     
-    // تشغيل الدرس الأخير اللي وقف عنده أو الأول
+    // تشغيل أول درس تلقائي لو مفيش حاجة شغالة
     if (currentCourse.lessons.length > 0) {
-        // لو مفيش درس محدد، ابدأ بالأول
         playLesson(0);
     }
 }
@@ -75,7 +74,7 @@ function renderPlaylist() {
         `;
     }).join('');
 
-    // 👇 زرار الاختبار النهائي (مفتوح دائماً الآن)
+    // زرار الاختبار النهائي (موجود دائماً)
     html += `
         <button onclick="openQuizModal()" class="w-full text-right p-4 rounded-xl flex items-center gap-3 transition border border-transparent bg-yellow-50 border-yellow-200 hover:bg-yellow-100 shadow-sm mb-2 mt-4 group">
             <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-yellow-500 text-white">
@@ -83,7 +82,7 @@ function renderPlaylist() {
             </div>
             <div class="flex-1">
                 <h4 class="font-bold text-sm text-slate-800">الاختبار النهائي</h4>
-                <span class="text-xs text-slate-500">متاح الآن - ادخل وقت ما تحب</span>
+                <span class="text-xs text-slate-500">ادخل وقت ما تحب (اختياري)</span>
             </div>
             <i data-lucide="chevron-left" class="w-5 h-5 text-yellow-600"></i>
         </button>
@@ -100,10 +99,10 @@ function playLesson(index) {
     const videoContainer = document.getElementById('video-container');
     const audioContainer = document.getElementById('audio-container');
     const textViewer = document.getElementById('text-viewer');
-    
     const videoPlayer = document.getElementById('video-player');
     const audioPlayer = document.getElementById('audio-player');
     
+    // إخفاء الكل وإيقاف المشغلات
     videoContainer.classList.add('hidden');
     audioContainer.classList.add('hidden');
     textViewer.classList.add('hidden');
@@ -133,16 +132,19 @@ function playLesson(index) {
     }
 }
 
+// دالة الانتقال التلقائي (بدون أسئلة مزعجة)
 window.finishCurrentLesson = function() {
     if(currentLessonId) {
         markLessonComplete(currentLessonId);
+        
+        // الانتقال السلس للدرس التالي
         const currentIndex = currentCourse.lessons.findIndex(l => l.id == currentLessonId);
         if (currentIndex < currentCourse.lessons.length - 1) {
-            if(confirm("خلصت الدرس؟ عاش! 👏 تحب نفتح اللي بعده؟")) {
-                playLesson(currentIndex + 1);
-            }
+            playLesson(currentIndex + 1); // شغل اللي بعده علطول
         } else {
-            alert("ألف مبروك! خلصت كل الدروس 🎉\nتقدر دلوقتي تدخل الاختبار من القائمة.");
+            // لو ده آخر درس، بس عرفه إنه خلص
+            // alert("خلصت الدروس! تقدر تدخل الاختبار لو حابب 🎓");
+            // مش هنعمل حاجة، هنسيبه يقرر
         }
     }
 }
@@ -170,9 +172,8 @@ function updateProgress() {
     document.getElementById('progress-text').innerText = `${progress}%`;
     document.getElementById('progress-bar').style.width = `${progress}%`;
 
-    // زرار الامتحان في الناف بار دايما ظاهر
     const quizBtn = document.getElementById('take-quiz-btn');
-    if(quizBtn) quizBtn.classList.remove('hidden');
+    if(quizBtn) quizBtn.classList.remove('hidden'); // دايما ظاهر
 }
 
 function renderAttachments() {
@@ -195,21 +196,19 @@ function renderAttachments() {
     lucide.createIcons();
 }
 
-// --- دوال الاختبار (Quiz Logic) ---
+// --- نافذة الاختبار (بدون قيود) ---
 window.openQuizModal = function() {
-    // 👇 شيلنا شرط إنهاء الدروس، الامتحان مفتوح للكل
-    
     const quizArea = document.getElementById('quiz-questions-area');
     const modal = document.getElementById('quiz-modal');
     
+    // تجهيز الأسئلة لو مش جاهزة
     if (!currentQuiz.length && currentCourse.quiz) {
         const allQuestions = [...currentCourse.quiz];
         currentQuiz = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 5);
     }
 
     if(!currentQuiz || currentQuiz.length === 0) {
-        alert("مبروك! الكورس ده مفيهوش امتحان 🎉");
-        finishCourse();
+        alert("الكورس ده مفيهوش امتحان، عاش يا بطل! 🎉");
         return;
     }
 
@@ -254,21 +253,22 @@ window.submitQuiz = function() {
     });
 
     if (!allAnswered) {
-        alert("من فضلك جاوب على كل الأسئلة! الهروب مش حل 😂");
+        alert("جاوب على كل الأسئلة عشان نعرف نطلع النتيجة 😉");
         return;
     }
 
     const percentage = (score / currentQuiz.length) * 100;
 
     if (percentage >= 75) { 
-        alert(`ألف مبروك! نتيجتك ${percentage}%. 🎉\nسيتم إصدار الشهادة الآن.`);
+        // نجاح: نقفل النافذة ونحدث الحالة، بس نخليه في الصفحة
         document.getElementById('quiz-modal').classList.add('hidden');
+        alert(`ألف مبروك! نتيجتك ${percentage}%. 🎉\nالشهادة جاهزة في لوحة التحكم.`);
         finishCourse();
     } else {
-        alert(`للاسف نتيجتك ${percentage}%. 😞\nالشرط هو 75% للنجاح.\nحاول مرة تانية، الأسئلة ممكن تتغير!`);
-        currentQuiz = []; // إعادة تعيين الأسئلة عشان المحاولة الجاية تكون جديدة
+        // رسوب: نخليه يحاول تاني
+        alert(`نتيجتك ${percentage}%. محتاج 75% عشان الشهادة.\nجرب تاني، مش مشكلة! 💪`);
+        currentQuiz = []; // نغير الأسئلة
         document.getElementById('quiz-modal').classList.add('hidden');
-        // هنا شلت إعادة الكورس من الأول، عشان يدخل بمزاجه زي ما طلبت
     }
 }
 
@@ -277,10 +277,6 @@ function finishCourse() {
     firebase.database().ref(`users/${user.uid}/enrolledCourses/${currentCourse.id}`).update({
         status: 'completed',
         completedAt: new Date().toISOString()
-    }).then(() => {
-        // 👇 هنا خلينا الطالب يفضل في الصفحة عشان لو عايز يراجع
-        if(confirm("تم تسجيل نجاحك في الكورس! 🎉\nتحب ترجع للوحة التحكم ولا تفضل هنا؟\n(OK = لوحة التحكم، Cancel = أفضل هنا)")) {
-            window.location.href = 'dashboard.html';
-        }
     });
+    // شيلنا الـ Confirm والـ Redirect، هيفضل مكانه يكمل قراءة
 }
