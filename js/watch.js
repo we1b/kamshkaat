@@ -23,7 +23,6 @@ function checkEnrollment(userId, courseId) {
     const db = firebase.database();
     db.ref(`users/${userId}/enrolledCourses/${courseId}`).once('value', (snapshot) => {
         if (!snapshot.exists()) {
-            // لو مش مشترك، وديه لصفحة التفاصيل
             window.location.href = `course-details.html?id=${courseId}&type=academy`;
         } else {
             const enrollmentData = snapshot.val();
@@ -46,7 +45,6 @@ function initPlayerUI() {
     renderAttachments();
     updateProgress();
     
-    // تشغيل أول درس تلقائي لو مفيش حاجة شغالة
     if (currentCourse.lessons.length > 0) {
         playLesson(0);
     }
@@ -74,7 +72,7 @@ function renderPlaylist() {
         `;
     }).join('');
 
-    // زرار الاختبار النهائي (موجود دائماً)
+    // زرار الاختبار النهائي (مفتوح للجميع)
     html += `
         <button onclick="openQuizModal()" class="w-full text-right p-4 rounded-xl flex items-center gap-3 transition border border-transparent bg-yellow-50 border-yellow-200 hover:bg-yellow-100 shadow-sm mb-2 mt-4 group">
             <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-yellow-500 text-white">
@@ -82,7 +80,7 @@ function renderPlaylist() {
             </div>
             <div class="flex-1">
                 <h4 class="font-bold text-sm text-slate-800">الاختبار النهائي</h4>
-                <span class="text-xs text-slate-500">ادخل وقت ما تحب (اختياري)</span>
+                <span class="text-xs text-slate-500">ادخل وقت ما تحب</span>
             </div>
             <i data-lucide="chevron-left" class="w-5 h-5 text-yellow-600"></i>
         </button>
@@ -99,10 +97,10 @@ function playLesson(index) {
     const videoContainer = document.getElementById('video-container');
     const audioContainer = document.getElementById('audio-container');
     const textViewer = document.getElementById('text-viewer');
+    
     const videoPlayer = document.getElementById('video-player');
     const audioPlayer = document.getElementById('audio-player');
     
-    // إخفاء الكل وإيقاف المشغلات
     videoContainer.classList.add('hidden');
     audioContainer.classList.add('hidden');
     textViewer.classList.add('hidden');
@@ -132,20 +130,14 @@ function playLesson(index) {
     }
 }
 
-// دالة الانتقال التلقائي (بدون أسئلة مزعجة)
 window.finishCurrentLesson = function() {
     if(currentLessonId) {
         markLessonComplete(currentLessonId);
-        
-        // الانتقال السلس للدرس التالي
         const currentIndex = currentCourse.lessons.findIndex(l => l.id == currentLessonId);
         if (currentIndex < currentCourse.lessons.length - 1) {
             playLesson(currentIndex + 1); // شغل اللي بعده علطول
-        } else {
-            // لو ده آخر درس، بس عرفه إنه خلص
-            // alert("خلصت الدروس! تقدر تدخل الاختبار لو حابب 🎓");
-            // مش هنعمل حاجة، هنسيبه يقرر
         }
+        // لو آخر درس مش هنعمل حاجة، هيفضل مكانه
     }
 }
 
@@ -171,9 +163,6 @@ function updateProgress() {
     const progress = Math.round((completedLessons.length / currentCourse.lessons.length) * 100);
     document.getElementById('progress-text').innerText = `${progress}%`;
     document.getElementById('progress-bar').style.width = `${progress}%`;
-
-    const quizBtn = document.getElementById('take-quiz-btn');
-    if(quizBtn) quizBtn.classList.remove('hidden'); // دايما ظاهر
 }
 
 function renderAttachments() {
@@ -196,12 +185,13 @@ function renderAttachments() {
     lucide.createIcons();
 }
 
-// --- نافذة الاختبار (بدون قيود) ---
+// --- نافذة الاختبار (بدون شروط) ---
 window.openQuizModal = function() {
+    // 👇 مفيش شرط هنا، الامتحان بيفتح لأي حد
+    
     const quizArea = document.getElementById('quiz-questions-area');
     const modal = document.getElementById('quiz-modal');
     
-    // تجهيز الأسئلة لو مش جاهزة
     if (!currentQuiz.length && currentCourse.quiz) {
         const allQuestions = [...currentCourse.quiz];
         currentQuiz = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 5);
@@ -209,6 +199,7 @@ window.openQuizModal = function() {
 
     if(!currentQuiz || currentQuiz.length === 0) {
         alert("الكورس ده مفيهوش امتحان، عاش يا بطل! 🎉");
+        finishCourse();
         return;
     }
 
@@ -260,14 +251,14 @@ window.submitQuiz = function() {
     const percentage = (score / currentQuiz.length) * 100;
 
     if (percentage >= 75) { 
-        // نجاح: نقفل النافذة ونحدث الحالة، بس نخليه في الصفحة
+        // نجاح
         document.getElementById('quiz-modal').classList.add('hidden');
         alert(`ألف مبروك! نتيجتك ${percentage}%. 🎉\nالشهادة جاهزة في لوحة التحكم.`);
         finishCourse();
     } else {
-        // رسوب: نخليه يحاول تاني
+        // رسوب
         alert(`نتيجتك ${percentage}%. محتاج 75% عشان الشهادة.\nجرب تاني، مش مشكلة! 💪`);
-        currentQuiz = []; // نغير الأسئلة
+        currentQuiz = []; 
         document.getElementById('quiz-modal').classList.add('hidden');
     }
 }
@@ -278,5 +269,4 @@ function finishCourse() {
         status: 'completed',
         completedAt: new Date().toISOString()
     });
-    // شيلنا الـ Confirm والـ Redirect، هيفضل مكانه يكمل قراءة
 }

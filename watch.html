@@ -29,9 +29,9 @@
             <div class="w-32 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                 <div id="progress-bar" class="h-full bg-emerald-500 w-0 transition-all duration-500"></div>
             </div>
-            <!-- زرار الامتحان موجود علطول دلوقتي -->
-            <button id="take-quiz-btn" onclick="openQuizModal()" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold px-3 py-2 rounded-lg transition shadow-lg flex items-center gap-1">
-                <i data-lucide="award" class="w-4 h-4"></i> ابدأ الاختبار
+            <!-- زرار الامتحان موجود علطول -->
+            <button onclick="openQuizModal()" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold px-3 py-2 rounded-lg transition shadow-lg flex items-center gap-1">
+                <i data-lucide="award" class="w-4 h-4"></i> الاختبار
             </button>
         </div>
     </nav>
@@ -73,7 +73,7 @@
             </div>
 
             <!-- التابات (ملحقات فقط) -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mb-20">
                 <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                     <i data-lucide="folder-open" class="text-emerald-500"></i> الملحقات
                 </h3>
@@ -95,17 +95,17 @@
         </div>
     </div>
 
-    <!-- نافذة الاختبار (Quiz Modal Separated) -->
-    <div id="quiz-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md transition-opacity duration-300">
+    <!-- نافذة الاختبار (Quiz Modal) - مع زر خروج -->
+    <div id="quiz-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm transition-opacity duration-300">
         <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden transform scale-100 transition-transform duration-300 flex flex-col max-h-[90vh]">
             <!-- هيدر النافذة -->
             <div class="bg-emerald-600 p-6 text-white flex justify-between items-center">
                 <div>
                     <h3 class="font-black text-2xl">الاختبار النهائي 🎓</h3>
-                    <p class="text-emerald-100 text-sm">جاوب 75% من الأسئلة صح عشان تاخد الشهادة</p>
+                    <p class="text-emerald-100 text-sm">جاوب صح وخد الشهادة!</p>
                 </div>
-                <!-- زرار الخروج موجود لأنك طلبت الدخول بمزاجك، بس ممكن تشيله لو عايز إجبار -->
-                <button onclick="document.getElementById('quiz-modal').classList.add('hidden')" class="bg-white/20 p-2 rounded-full hover:bg-white/30 transition">
+                <!-- 👇 زرار الخروج المنقذ -->
+                <button onclick="document.getElementById('quiz-modal').classList.add('hidden')" class="bg-white/20 p-2 rounded-full hover:bg-white/30 transition text-white">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
