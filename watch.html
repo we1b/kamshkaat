@@ -16,37 +16,33 @@
     <script src="js/auth.js"></script>
     <script src="js/kameshkah-data.js"></script>
 </head>
-<body class="bg-slate-50 overflow-hidden">
+<body class="bg-slate-50">
     
     <!-- Navbar -->
-    <nav class="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center fixed top-0 w-full z-50 h-16">
+    <nav class="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center fixed top-0 w-full z-50 h-16 shadow-sm">
         <div class="flex items-center gap-3">
             <a href="dashboard.html" class="bg-slate-100 p-2 rounded-lg hover:bg-slate-200 transition"><i data-lucide="arrow-right" class="w-5 h-5"></i></a>
             <h1 id="course-title-nav" class="font-bold text-slate-800 truncate max-w-[200px] md:max-w-md">جاري التحميل...</h1>
         </div>
         <div id="progress-container" class="flex items-center gap-2">
             <div class="text-xs font-bold text-slate-500">التقدم: <span id="progress-text">0%</span></div>
-            <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div class="w-32 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                 <div id="progress-bar" class="h-full bg-emerald-500 w-0 transition-all duration-500"></div>
             </div>
-            <!-- زرار الامتحان -->
-            <button id="take-quiz-btn" onclick="openQuizModal()" class="hidden bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold px-3 py-2 rounded-lg transition animate-pulse shadow-lg flex items-center gap-1">
-                <i data-lucide="award" class="w-4 h-4"></i> ابدأ الاختبار
-            </button>
         </div>
     </nav>
 
     <div class="pt-16 flex flex-col lg:flex-row h-screen">
         <!-- منطقة العرض (يمين) -->
-        <div class="flex-1 flex flex-col overflow-y-auto bg-slate-50 relative scroll-smooth">
+        <div class="flex-1 flex flex-col overflow-y-auto bg-slate-50 relative scroll-smooth p-4 md:p-6">
             
             <!-- 1. مشغل الفيديو -->
-            <div id="video-container" class="aspect-video bg-black relative group hidden">
+            <div id="video-container" class="aspect-video bg-black relative group hidden rounded-2xl overflow-hidden shadow-lg mb-6">
                 <iframe id="video-player" class="w-full h-full" src="" frameborder="0" allowfullscreen></iframe>
             </div>
 
-            <!-- 2. مشغل الصوت (جديد 🎧) -->
-            <div id="audio-container" class="hidden bg-slate-900 p-10 flex flex-col items-center justify-center min-h-[300px]">
+            <!-- 2. مشغل الصوت -->
+            <div id="audio-container" class="hidden bg-slate-900 p-10 flex flex-col items-center justify-center min-h-[300px] rounded-2xl shadow-lg mb-6">
                 <div class="w-32 h-32 bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-2xl animate-pulse">
                     <i data-lucide="headphones" class="w-16 h-16 text-emerald-400"></i>
                 </div>
@@ -54,7 +50,7 @@
                 <audio id="audio-player" controls class="w-full max-w-md"></audio>
             </div>
 
-            <!-- 3. قارئ النصوص (محدث) -->
+            <!-- 3. قارئ النصوص -->
             <div id="text-viewer" class="hidden">
                 <div class="max-w-3xl mx-auto">
                     <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full mb-6 inline-block">درس قراءة 📖</span>
@@ -73,10 +69,10 @@
             </div>
 
             <!-- التابات (ملحقات فقط) -->
-            <div class="p-6 pb-20">
-                <div class="flex gap-4 border-b border-slate-200 mb-6">
-                    <button class="text-emerald-600 border-b-2 border-emerald-600 pb-2 font-bold px-4">الملحقات 📂</button>
-                </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="folder-open" class="text-emerald-500"></i> الملحقات
+                </h3>
                 <ul id="attachments-list" class="space-y-3">
                     <!-- الملحقات -->
                 </ul>
@@ -90,26 +86,22 @@
                 <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md" id="lessons-count">0 درس</span>
             </div>
             <div id="playlist" class="overflow-y-auto flex-1 p-3 space-y-2 pb-20">
-                <!-- الدروس -->
+                <!-- الدروس هتنزل هنا + الاختبار في الآخر -->
             </div>
         </div>
     </div>
 
-    <!-- نافذة الاختبار (Quiz Modal Separated) -->
-    <div id="quiz-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm transition-opacity duration-300">
-        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden transform scale-100 transition-transform duration-300 flex flex-col max-h-[90vh]">
+    <!-- نافذة الاختبار (Quiz Modal) - بدون زر خروج! -->
+    <div id="quiz-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-bounce-slow">
             <!-- هيدر النافذة -->
-            <div class="bg-emerald-600 p-6 text-white flex justify-between items-center">
-                <div>
-                    <h3 class="font-black text-2xl">الاختبار النهائي 🎓</h3>
-                    <p class="text-emerald-100 text-sm">جاوب 4 أسئلة صح عشان تاخد الشهادة</p>
-                </div>
-                <button onclick="document.getElementById('quiz-modal').classList.add('hidden')" class="bg-white/20 p-2 rounded-full hover:bg-white/30 transition">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
+            <div class="bg-yellow-500 p-6 text-white text-center">
+                <div class="mb-2"><i data-lucide="award" class="w-12 h-12 mx-auto"></i></div>
+                <h3 class="font-black text-3xl">الاختبار النهائي</h3>
+                <p class="text-yellow-50 font-bold text-sm mt-1">تنبيه: لن يمكنك الخروج حتى تنهي الاختبار!</p>
             </div>
             
-            <!-- جسم النافذة (قابل للسكرول) -->
+            <!-- جسم النافذة -->
             <div id="quiz-questions-area" class="p-8 overflow-y-auto flex-1 space-y-8 bg-slate-50">
                 <!-- الأسئلة هتنزل هنا -->
             </div>

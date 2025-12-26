@@ -53,7 +53,7 @@ function initPlayerUI() {
 
 function renderPlaylist() {
     const list = document.getElementById('playlist');
-    list.innerHTML = currentCourse.lessons.map((lesson, index) => {
+    let html = currentCourse.lessons.map((lesson, index) => {
         const isCompleted = completedLessons.includes(lesson.id);
         let icon = 'play-circle';
         if (lesson.type === 'text') icon = 'book-open';
@@ -72,6 +72,23 @@ function renderPlaylist() {
         </button>
         `;
     }).join('');
+
+    // إضافة زرار الاختبار في آخر القائمة
+    const allDone = completedLessons.length === currentCourse.lessons.length;
+    html += `
+        <button onclick="openQuizModal()" class="w-full text-right p-4 rounded-xl flex items-center gap-3 transition border border-transparent group ${allDone ? 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100' : 'bg-slate-100 opacity-70 cursor-not-allowed'} shadow-sm mb-2 mt-4">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${allDone ? 'bg-yellow-500 text-white' : 'bg-slate-300 text-slate-500'}">
+                <i data-lucide="award" class="w-5 h-5"></i>
+            </div>
+            <div class="flex-1">
+                <h4 class="font-bold text-sm text-slate-800">الاختبار النهائي</h4>
+                <span class="text-xs text-slate-500">${allDone ? 'جاهز للبدء' : 'مغلق (أكمل الدروس)'}</span>
+            </div>
+            ${allDone ? '<i data-lucide="chevron-left" class="w-5 h-5 text-yellow-600"></i>' : '<i data-lucide="lock" class="w-4 h-4 text-slate-400"></i>'}
+        </button>
+    `;
+
+    list.innerHTML = html;
     lucide.createIcons();
 }
 
@@ -86,7 +103,6 @@ function playLesson(index) {
     const videoPlayer = document.getElementById('video-player');
     const audioPlayer = document.getElementById('audio-player');
     
-    // إخفاء الكل وإيقاف المشغلات
     videoContainer.classList.add('hidden');
     audioContainer.classList.add('hidden');
     textViewer.classList.add('hidden');
@@ -95,41 +111,33 @@ function playLesson(index) {
     audioPlayer.pause();
 
     if (lesson.type === 'text') {
-        // --- وضع القراءة ---
         textViewer.classList.remove('hidden');
         document.getElementById('text-lesson-title').innerText = lesson.title;
         document.getElementById('text-lesson-content').innerHTML = lesson.content;
-        document.querySelector('.flex-1').scrollTop = 0; // سكرول لأول الصفحة
+        document.querySelector('.flex-1').scrollTop = 0; 
     } 
     else if (lesson.type === 'audio') {
-        // --- وضع الصوت ---
         audioContainer.classList.remove('hidden');
         document.getElementById('audio-title').innerText = lesson.title;
         audioPlayer.src = lesson.url;
         audioPlayer.play();
-        // الصوتيات بتتحسب كملت لما يشغلها (مؤقتاً)
         markLessonComplete(lesson.id);
     } 
     else {
-        // --- وضع الفيديو ---
         videoContainer.classList.remove('hidden');
         videoPlayer.src = lesson.url;
         markLessonComplete(lesson.id);
     }
 }
 
-// زرار "أتممت الدرس" (للنصوص)
 window.finishCurrentLesson = function() {
     if(currentLessonId) {
         markLessonComplete(currentLessonId);
-        // نقل للدرس اللي بعده لو موجود
         const currentIndex = currentCourse.lessons.findIndex(l => l.id == currentLessonId);
         if (currentIndex < currentCourse.lessons.length - 1) {
-            if(confirm("ممتاز! 👏 تحب نفتح الدرس اللي بعده؟")) {
-                playLesson(currentIndex + 1);
-            }
+            playLesson(currentIndex + 1);
         } else {
-            alert("ألف مبروك! خلصت كل الدروس 🎉\nاضغط على زر 'ابدأ الاختبار' فوق.");
+            alert("ألف مبروك! خلصت كل الدروس 🎉\nتقدر دلوقتي تدخل الاختبار من القائمة.");
         }
     }
 }
@@ -156,20 +164,13 @@ function updateProgress() {
     const progress = Math.round((completedLessons.length / currentCourse.lessons.length) * 100);
     document.getElementById('progress-text').innerText = `${progress}%`;
     document.getElementById('progress-bar').style.width = `${progress}%`;
-
-    const quizBtn = document.getElementById('take-quiz-btn');
-    if (progress === 100) {
-        quizBtn.classList.remove('hidden');
-    } else {
-        quizBtn.classList.add('hidden');
-    }
 }
 
 function renderAttachments() {
     const list = document.getElementById('attachments-list');
     if (currentCourse.attachments && currentCourse.attachments.length > 0) {
         list.innerHTML = currentCourse.attachments.map(att => `
-            <li class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition">
+            <li class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl hover:shadow-md transition">
                 <div class="flex items-center gap-3">
                     <div class="bg-blue-100 text-blue-600 p-2 rounded-lg">
                         <i data-lucide="file" class="w-5 h-5"></i>
@@ -185,12 +186,17 @@ function renderAttachments() {
     lucide.createIcons();
 }
 
-// --- منطق نافذة الاختبار (Quiz Modal) ---
+// --- دوال الاختبار (Quiz Logic) ---
 window.openQuizModal = function() {
+    // التأكد من إنهاء الدروس
+    if (completedLessons.length < currentCourse.lessons.length) {
+        alert("لازم تخلص كل الدروس الأول يا بطل! 😅");
+        return;
+    }
+
     const quizArea = document.getElementById('quiz-questions-area');
     const modal = document.getElementById('quiz-modal');
     
-    // اختيار 5 أسئلة عشوائية
     if (!currentQuiz.length && currentCourse.quiz) {
         const allQuestions = [...currentCourse.quiz];
         currentQuiz = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 5);
@@ -205,8 +211,8 @@ window.openQuizModal = function() {
     let html = '';
     currentQuiz.forEach((q, index) => {
         html += `
-        <div class="mb-6 bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-emerald-200 transition">
-            <p class="font-bold text-slate-800 mb-4 text-lg border-b border-slate-100 pb-2">
+        <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <p class="font-bold text-slate-800 mb-3 text-lg border-b border-slate-100 pb-2">
                 <span class="text-emerald-600">س ${index + 1}:</span> ${q.q}
             </p>
             <div class="space-y-3">
@@ -231,7 +237,6 @@ window.openQuizModal = function() {
 
 window.submitQuiz = function() {
     let score = 0;
-    // التأكد من إجابة كل الأسئلة
     let allAnswered = true;
     
     currentQuiz.forEach((q, index) => {
@@ -244,20 +249,19 @@ window.submitQuiz = function() {
     });
 
     if (!allAnswered) {
-        alert("من فضلك جاوب على كل الأسئلة الأول! 🧐");
+        alert("من فضلك جاوب على كل الأسئلة! الهروب مش حل 😂");
         return;
     }
 
     const percentage = (score / currentQuiz.length) * 100;
 
-    if (percentage >= 75) { 
-        alert(`ألف مبروك! 🎉\nنتيجتك: ${score} من ${currentQuiz.length} (${percentage}%).\nجاري إصدار الشهادة...`);
+    if (percentage >= 80) { // شرط النجاح 80%
+        alert(`ألف مبروك! نتيجتك ${percentage}%. 🎉\nسيتم إصدار الشهادة الآن.`);
         document.getElementById('quiz-modal').classList.add('hidden');
         finishCourse();
     } else {
-        alert(`للاسف نتيجتك ${percentage}%. 😞\nمحتاج تجيب 75% عشان تنجح.\nراجع الدروس وحاول تاني!`);
-        currentQuiz = []; // إعادة تعيين الأسئلة لتغييرها
-        document.getElementById('quiz-modal').classList.add('hidden');
+        alert(`للاسف نتيجتك ${percentage}%. 😞\nالشرط هو 80% للنجاح.\nللأسف مضطرين نعيد الكورس من الأول عشان تثبت المعلومة!`);
+        resetCourseProgress();
     }
 }
 
@@ -268,5 +272,16 @@ function finishCourse() {
         completedAt: new Date().toISOString()
     }).then(() => {
         window.location.href = 'dashboard.html';
+    });
+}
+
+function resetCourseProgress() {
+    const user = firebase.auth().currentUser;
+    // تصفير التقدم وإعادة تحميل الصفحة
+    firebase.database().ref(`users/${user.uid}/enrolledCourses/${currentCourse.id}`).update({
+        progress: 0,
+        completedLessons: [] // فضينا المصفوفة
+    }).then(() => {
+        window.location.reload(); // ريفرش للصفحة عشان يبدأ من جديد
     });
 }
