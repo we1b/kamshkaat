@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     firebase.auth().onAuthStateChanged((user) => {
         if (user) {
             fetchUserData(user);
+            initRamadanTracker(user); // تشغيل متتبع رمضان
         } else {
             window.location.href = 'login.html';
         }
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let currentUserData = null;
 let currentFirebaseUser = null;
+let selectedRamadanDay = 1; // اليوم المختار افتراضياً
 
 function fetchUserData(user) {
     currentFirebaseUser = user;
@@ -107,14 +109,12 @@ function loadEnrolledCourses(enrolledCoursesData) {
             let actionButtons = '';
             
             if (isCompleted) {
-                // زرار الشهادة
                 actionButtons = `
                     <button onclick="generateCertificate('${c.title}')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2 shadow-md">
                         <i data-lucide="award" class="w-4 h-4"></i> تحميل الشهادة
                     </button>
                 `;
             } else {
-                // زرار استكمال المشاهدة (يودي لصفحة watch.html)
                 actionButtons = `
                     <a href="watch.html?id=${c.id}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2 shadow-md">
                         <i data-lucide="play" class="w-4 h-4"></i> استكمال
@@ -159,15 +159,12 @@ function loadEnrolledCourses(enrolledCoursesData) {
     }
 }
 
-// دالة توليد الشهادة (Canvas)
 window.generateCertificate = function(courseName) {
-    // 1. طلب الاسم من المستخدم للتأكد
     let defaultName = document.getElementById('user-name-display').innerText;
     let userName = prompt("اكتب الاسم اللي عايزه يظهر في الشهادة:", defaultName);
     
-    if (!userName) return; // لو داس إلغاء
+    if (!userName) return; 
 
-    // إنشاء عنصر Canvas في الذاكرة
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
@@ -182,29 +179,17 @@ window.generateCertificate = function(courseName) {
     img.onload = () => {
         canvas.width = img.width;
         canvas.height = img.height;
-
-        // 1. رسم الخلفية
         ctx.drawImage(img, 0, 0);
-
-        // 2. كتابة الاسم (تنسيق أفضل)
+        
         ctx.font = 'bold 80px "Cairo", sans-serif'; 
         ctx.fillStyle = '#1e293b'; 
         ctx.textAlign = 'center';
-        // ظبط مكان الاسم (نص العرض، وشوية تحت النص في الطول)
         ctx.fillText(userName, canvas.width / 2, canvas.height / 2);
 
-        // 3. كتابة اسم الكورس
         ctx.font = '50px "Cairo", sans-serif';
         ctx.fillStyle = '#059669'; 
         ctx.fillText(courseName, canvas.width / 2, canvas.height / 2 + 120);
 
-        // 4. كتابة التاريخ
-        ctx.font = '30px "Cairo", sans-serif';
-        ctx.fillStyle = '#64748b';
-        const date = new Date().toLocaleDateString('ar-EG');
-        ctx.fillText(date, canvas.width / 2, canvas.height - 100);
-
-        // 5. التحميل
         const link = document.createElement('a');
         link.download = `Certificate-${courseName}.png`;
         link.href = canvas.toDataURL();
@@ -215,8 +200,82 @@ window.generateCertificate = function(courseName) {
     };
 
     img.onerror = () => {
-        alert("صورة قالب الشهادة مش موجودة! (images/ui/certificate-template.jpg)");
+        alert("صورة قالب الشهادة مش موجودة!");
         btn.innerHTML = originalText;
         btn.disabled = false;
     };
+}
+
+/* --------------------------------------------------------
+   🌙 منطق تحدي رمضان (Ramadan Logic)
+   -------------------------------------------------------- */
+function initRamadanTracker(user) {
+    // 1. توليد قائمة الأيام (30 يوم)
+    const daysScroller = document.getElementById('ramadan-days-scroller');
+    daysScroller.innerHTML = '';
+    
+    for (let i = 1; i <= 30; i++) {
+        const dayBtn = document.createElement('button');
+        dayBtn.className = `shrink-0 w-12 h-12 rounded-full font-bold text-sm transition flex items-center justify-center border-2 
+            ${i === selectedRamadanDay ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-slate-500 border-slate-200 hover:border-purple-300'}`;
+        dayBtn.innerText = i;
+        dayBtn.onclick = () => selectRamadanDay(i, user);
+        daysScroller.appendChild(dayBtn);
+    }
+
+    // 2. تحميل بيانات اليوم الأول (أو الحالي)
+    selectRamadanDay(selectedRamadanDay, user);
+}
+
+function selectRamadanDay(day, user) {
+    selectedRamadanDay = day;
+    document.getElementById('today-date').innerText = `اليوم ${day} رمضان`;
+    document.getElementById('selected-day-title').innerText = `إنجازات اليوم ${day}`;
+
+    // تحديث ستايل الأزرار
+    const buttons = document.getElementById('ramadan-days-scroller').children;
+    for (let btn of buttons) {
+        if (btn.innerText == day) {
+            btn.className = "shrink-0 w-12 h-12 rounded-full font-bold text-sm transition flex items-center justify-center border-2 bg-purple-600 text-white border-purple-600 shadow-md transform scale-110";
+        } else {
+            btn.className = "shrink-0 w-12 h-12 rounded-full font-bold text-sm transition flex items-center justify-center border-2 bg-white text-slate-500 border-slate-200 hover:border-purple-300";
+        }
+    }
+
+    // جلب البيانات من فايربيس لليوم ده
+    const db = firebase.database();
+    db.ref(`users/${user.uid}/ramadanChallenge/day${day}`).once('value', (snapshot) => {
+        const data = snapshot.val() || {};
+        
+        // تعبئة الحقول
+        document.getElementById('quran-input').value = data.quran || '';
+        document.getElementById('azkar-check').checked = data.azkar || false;
+        document.getElementById('tarawih-check').checked = data.tarawih || false;
+        document.getElementById('tahajjud-check').checked = data.tahajjud || false;
+        document.getElementById('sunan-check').checked = data.sunan || false;
+    });
+}
+
+window.saveRamadanDay = function() {
+    if (!currentFirebaseUser) return;
+    
+    const dayData = {
+        quran: document.getElementById('quran-input').value,
+        azkar: document.getElementById('azkar-check').checked,
+        tarawih: document.getElementById('tarawih-check').checked,
+        tahajjud: document.getElementById('tahajjud-check').checked,
+        sunan: document.getElementById('sunan-check').checked,
+        completed: true // علامة إن اليوم ده اتسجل فيه بيانات
+    };
+
+    const db = firebase.database();
+    db.ref(`users/${currentFirebaseUser.uid}/ramadanChallenge/day${selectedRamadanDay}`).set(dayData)
+        .then(() => {
+            alert(`تم حفظ إنجاز اليوم ${selectedRamadanDay} يا بطل! 🌙✨`);
+            // ممكن هنا نحسب النقاط ونحدثها
+        })
+        .catch(err => {
+            console.error(err);
+            alert("حصلت مشكلة في الحفظ");
+        });
 }

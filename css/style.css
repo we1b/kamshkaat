@@ -3,8 +3,9 @@
 
 :root {
     --primary-color: #059669;
-    --bg-gradient: linear-gradient(135deg, #fef9c3 0%, #dcfce7 50%, #cffafe 100%);
+    --primary-dark: #064e3b;
     --text-dark: #1e293b;
+    --bg-gradient: linear-gradient(135deg, #fef9c3 0%, #dcfce7 50%, #cffafe 100%);
 }
 
 body {
@@ -13,76 +14,103 @@ body {
     min-height: 100vh;
     color: var(--text-dark);
     overflow-x: hidden;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
-/* --- 🛑 حل مشكلة تداخل النصوص (تحديث جذري) 🛑 --- */
+/* --- 🛑 حل مشكلة تداخل النصوص (Text Viewer Fixes) 🛑 --- */
 #text-viewer {
-    background: #ffffff;
-    padding: 3rem 2rem !important; /* مساحة داخلية كبيرة */
-    min-height: 100vh; /* ياخد طول الشاشة عالأقل */
-    height: auto !important; /* الطول يزيد مع الكلام */
-    overflow: visible !important; /* يمنع قص الكلام */
+    background-color: #ffffff;
+    padding: 4rem 2rem !important; /* مساحة كبيرة فوق وتحت */
+    min-height: 80vh;
+    height: auto !important;
+    overflow: visible !important;
     border-radius: 0 0 1.5rem 1.5rem;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    margin-bottom: 4rem; /* مسافة تحت الصندوق */
+    margin-bottom: 5rem;
 }
 
+/* التنسيق الداخلي للنص */
 #text-lesson-content {
-    display: block !important;
-    font-size: 1.2rem !important; /* تكبير الخط */
-    line-height: 2.4 !important; /* تباعد أسطر كبير جداً */
+    font-size: 1.25rem !important; /* تكبير الخط */
+    line-height: 2.5 !important; /* تباعد أسطر واسع جداً */
     color: #334155 !important;
-    text-align: justify; /* محاذاة النص */
+    text-align: justify;
 }
 
-/* فواصل بين الفقرات */
-#text-lesson-content p, 
-#text-lesson-content div, 
-#text-lesson-content ul {
-    margin-bottom: 2.5rem !important; /* مسافة كبيرة بين كل فقرة والتانية */
+/* فواصل قوية بين العناصر */
+#text-lesson-content > * {
+    margin-bottom: 2.5rem !important;
+    display: block;
 }
 
 #text-lesson-content h3 {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 900;
     color: #047857;
-    margin-top: 3rem !important;
-    margin-bottom: 2rem !important;
-    border-bottom: 2px solid #ecfdf5;
+    margin-top: 2rem !important;
     padding-bottom: 1rem;
+    border-bottom: 2px solid #ecfdf5;
 }
 
 #text-lesson-content h4 {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: #1e293b;
-    margin-top: 2.5rem !important;
-    margin-bottom: 1.5rem !important;
+    margin-top: 2rem !important;
 }
 
-#text-lesson-content ul {
-    list-style-type: disc;
-    padding-right: 2rem;
-    background: #f8fafc;
-    padding: 2rem 3rem 2rem 1rem;
+#text-lesson-content ul, 
+#text-lesson-content ol {
+    background-color: #f8fafc;
+    padding: 2rem 3rem 2rem 1rem !important;
     border-radius: 1rem;
     border: 1px solid #e2e8f0;
+    list-style-type: disc;
+    margin-right: 1rem;
 }
 
 #text-lesson-content li {
-    margin-bottom: 1rem !important;
+    margin-bottom: 1.5rem !important; /* مسافة بين النقط */
 }
 
-/* صناديق التنبيهات والاختبارات */
+/* صناديق الدرس */
 .lesson-box {
     padding: 2rem !important;
     border-radius: 1rem;
-    border: 1px solid rgba(0,0,0,0.05);
     margin: 3rem 0 !important;
+    line-height: 2 !important;
 }
-.box-green { background-color: #ecfdf5; border-right: 5px solid #10b981; }
-.box-yellow { background-color: #fefce8; border-right: 5px solid #eab308; }
-.box-red { background-color: #fef2f2; border-right: 5px solid #ef4444; }
+.box-green { background-color: #ecfdf5; border-right: 6px solid #10b981; }
+.box-yellow { background-color: #fefce8; border-right: 6px solid #eab308; }
+.box-red { background-color: #fef2f2; border-right: 6px solid #ef4444; }
+
+/* --- تصميم نافذة الاختبار (Quiz Modal) --- */
+#quiz-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+#quiz-content {
+    background: white;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    position: relative;
+    animation: zoomIn 0.3s ease;
+}
+@keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 /* --- باقي الستايل الأساسي --- */
 .fixed-bg { position: fixed; inset: 0; z-index: -1; }
@@ -94,6 +122,17 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.6);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
+.glass-panel input { background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.5); }
+.glass-panel input:focus { background: rgba(255, 255, 255, 0.9); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2); }
 
-.fade-in { opacity: 0; animation: fadeInUp 0.8s forwards; }
+#lightbox { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; }
+#lightbox.active { opacity: 1; visibility: visible; }
+#lightbox img { max-height: 85vh; max-width: 90vw; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+
+.masonry-grid { column-count: 1; column-gap: 1.5rem; }
+@media (min-width: 640px) { .masonry-grid { column-count: 2; } }
+@media (min-width: 1024px) { .masonry-grid { column-count: 3; } }
+.break-inside-avoid { break-inside: avoid; margin-bottom: 1.5rem; }
+
+.fade-in { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
