@@ -2,11 +2,11 @@
 
 let currentCourse = null;
 let completedLessons = [];
-let currentQuiz = [];
 let currentLessonId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    
     const params = new URLSearchParams(window.location.search);
     const courseId = params.get('id');
 
@@ -26,11 +26,20 @@ function checkEnrollment(userId, courseId) {
             window.location.href = `course-details.html?id=${courseId}&type=academy`;
         } else {
             const enrollmentData = snapshot.val();
+            // تأكد من تحميل kameshkahData قبل استخدامه
+            if (typeof window.kameshkahData === 'undefined') {
+                console.error('Kameshkah data not loaded');
+                return;
+            }
+            
             const staticData = window.kameshkahData.find(c => c.id == courseId);
             if(staticData) {
                 currentCourse = { ...staticData, ...enrollmentData };
                 completedLessons = enrollmentData.completedLessons || []; 
                 initPlayerUI();
+            } else {
+                alert('عذراً، بيانات الكورس غير متوفرة حالياً.');
+                window.location.href = 'courses.html';
             }
         }
     });
@@ -40,6 +49,13 @@ function initPlayerUI() {
     document.getElementById('course-title-nav').innerText = currentCourse.titleAr;
     document.getElementById('lessons-count').innerText = `${currentCourse.lessons.length} درس`;
     
+    // تحديث رابط زر الاختبار في الناف بار
+    const quizBtnNav = document.getElementById('quiz-btn-nav');
+    if (quizBtnNav) {
+        quizBtnNav.href = `quiz.html?courseId=${currentCourse.id}`;
+        quizBtnNav.classList.remove('hidden');
+    }
+
     renderPlaylist();
     renderAttachments();
     updateProgress();
@@ -73,20 +89,20 @@ function renderPlaylist() {
         </button>`;
     }).join('');
 
-    // زرار الامتحان (في آخر القائمة)
+    // زرار الاختبار (في آخر القائمة - اختياري)
     html += `
         <div class="mt-6 pt-4 border-t border-slate-200">
-            <button onclick="openQuizModal()" class="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-white p-4 rounded-xl flex items-center justify-between gap-3 shadow-md hover:shadow-lg transition transform hover:-translate-y-1 group cursor-pointer">
+            <a href="quiz.html?courseId=${currentCourse.id}" class="block w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-white p-4 rounded-xl flex items-center justify-between gap-3 shadow-md hover:shadow-lg transition transform hover:-translate-y-1 group cursor-pointer">
                 <div class="flex items-center gap-3">
                     <div class="bg-white/20 p-2 rounded-lg"><i data-lucide="award" class="w-6 h-6 text-white"></i></div>
                     <div class="text-right"><h4 class="font-black text-base">الاختبار النهائي</h4><span class="text-xs text-yellow-50 opacity-90">متاح الآن</span></div>
                 </div>
                 <i data-lucide="chevron-left" class="w-5 h-5 text-white"></i>
-            </button>
+            </a>
         </div>`;
 
     list.innerHTML = html;
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function playLesson(index) {
@@ -168,60 +184,20 @@ function renderAttachments() {
     const list = document.getElementById('attachments-list');
     if (currentCourse.attachments && currentCourse.attachments.length > 0) {
         list.innerHTML = currentCourse.attachments.map(att => `
-            <li class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl hover:shadow-md transition">
+            <li class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition">
                 <div class="flex items-center gap-3"><div class="bg-blue-100 text-blue-600 p-2 rounded-lg"><i data-lucide="file" class="w-5 h-5"></i></div><span class="font-bold text-slate-700">${att.name}</span></div>
                 <a href="${att.link}" target="_blank" class="text-sm font-bold text-blue-600 hover:bg-blue-50 px-3 py-1 rounded-lg transition">تحميل</a>
             </li>`).join('');
     } else {
         list.innerHTML = '<li class="text-slate-400 text-sm text-center">لا توجد ملحقات</li>';
     }
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-// --- نظام الاختبار (يفتح عند الطلب فقط) ---
-window.openQuizModal = function() {
-    const quizArea = document.getElementById('quiz-questions-area');
-    const modal = document.getElementById('quiz-modal');
-    
-    if (!currentQuiz.length && currentCourse.quiz) {
-        const allQuestions = [...currentCourse.quiz];
-        currentQuiz = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 5);
-    }
-
-    if(!currentQuiz || currentQuiz.length === 0) {
-        alert("لا يوجد اختبار لهذا الكورس!");
-        return;
-    }
-
-    let html = '';
-    currentQuiz.forEach((q, index) => {
-        html += `<div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200"><p class="font-bold text-slate-800 mb-3 text-lg border-b border-slate-100 pb-2"><span class="text-emerald-600">س ${index + 1}:</span> ${q.q}</p><div class="space-y-3">${q.options.map((opt, i) => `<label class="flex items-center gap-3 cursor-pointer p-3 rounded-lg border border-slate-100 hover:bg-emerald-50 hover:border-emerald-200 transition group"><div class="relative flex items-center"><input type="radio" name="q${index}" value="${i}" class="peer h-5 w-5 cursor-pointer appearance-none rounded-full border border-slate-300 checked:border-emerald-500 checked:bg-emerald-500 transition-all"></div><span class="text-slate-600 font-medium group-hover:text-slate-800">${opt}</span></label>`).join('')}</div></div>`;
+function finishCourse() {
+    const user = firebase.auth().currentUser;
+    firebase.database().ref(`users/${user.uid}/enrolledCourses/${currentCourse.id}`).update({
+        status: 'completed',
+        completedAt: new Date().toISOString()
     });
-
-    quizArea.innerHTML = html;
-    modal.classList.remove('hidden');
-}
-
-window.submitQuiz = function() {
-    let score = 0;
-    let allAnswered = true;
-    currentQuiz.forEach((q, index) => {
-        const selected = document.querySelector(`input[name="q${index}"]:checked`);
-        if (!selected) { allAnswered = false; }
-        else if (parseInt(selected.value) === q.correct) { score++; }
-    });
-
-    if (!allAnswered) { alert("جاوب على كل الأسئلة!"); return; }
-
-    const percentage = (score / currentQuiz.length) * 100;
-    if (percentage >= 75) { 
-        document.getElementById('quiz-modal').classList.add('hidden');
-        alert(`ألف مبروك! نتيجتك ${percentage}%. 🎉\nالشهادة جاهزة.`);
-        const user = firebase.auth().currentUser;
-        firebase.database().ref(`users/${user.uid}/enrolledCourses/${currentCourse.id}`).update({ status: 'completed', completedAt: new Date().toISOString() });
-    } else {
-        alert(`نتيجتك ${percentage}%. حاول تاني!`);
-        currentQuiz = [];
-        openQuizModal();
-    }
 }

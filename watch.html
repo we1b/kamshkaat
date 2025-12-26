@@ -7,9 +7,8 @@
     <link rel="icon" type="image/png" href="images/ui/logo.png">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -30,6 +29,10 @@
             <div class="w-32 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                 <div id="progress-bar" class="h-full bg-emerald-500 w-0 transition-all duration-500"></div>
             </div>
+            <!-- زرار الامتحان يظهر هنا اختياري -->
+             <a href="#" id="quiz-btn-nav" class="hidden bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold px-3 py-2 rounded-lg transition shadow-lg flex items-center gap-1">
+                <i data-lucide="award" class="w-4 h-4"></i> الاختبار
+            </a>
         </div>
     </nav>
 
@@ -43,16 +46,20 @@
             </div>
 
             <div id="audio-container" class="hidden bg-slate-900 p-10 flex flex-col items-center justify-center min-h-[300px] rounded-2xl shadow-lg mb-6">
-                <i data-lucide="headphones" class="w-16 h-16 text-emerald-400 mb-4 animate-pulse"></i>
-                <h3 id="audio-title" class="text-white text-xl font-bold mb-6"></h3>
+                <div class="w-32 h-32 bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-2xl animate-pulse">
+                     <i data-lucide="headphones" class="w-16 h-16 text-emerald-400"></i>
+                </div>
+                <h3 id="audio-title" class="text-white text-xl font-bold mb-6">عنوان الدرس الصوتي</h3>
                 <audio id="audio-player" controls class="w-full max-w-md"></audio>
             </div>
 
+            <!-- قارئ النصوص -->
             <div id="text-viewer" class="hidden bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-slate-200 mb-6">
                 <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full mb-6 inline-block">درس قراءة 📖</span>
                 <h2 id="text-lesson-title" class="text-3xl font-black text-slate-900 mb-8 leading-snug"></h2>
                 <div id="text-lesson-content" class="text-slate-700 text-lg leading-loose space-y-6"></div>
                 
+                <!-- زرار إنهاء الدرس -->
                 <div class="mt-12 text-center border-t border-slate-100 pt-8 pb-8">
                     <button onclick="finishCurrentLesson()" class="bg-slate-800 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-900 transition flex items-center gap-2 mx-auto shadow-lg">
                         الدرس التالي <i data-lucide="arrow-left" class="w-5 h-5"></i>
@@ -77,24 +84,6 @@
             </div>
             <div id="playlist" class="overflow-y-auto flex-1 p-3 space-y-2 pb-20">
                 <!-- القائمة هنا -->
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة الاختبار -->
-    <div id="quiz-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-emerald-600 p-6 text-white flex justify-between items-center">
-                <h3 class="font-black text-2xl">الاختبار النهائي 🎓</h3>
-                <button onclick="document.getElementById('quiz-modal').classList.add('hidden')" class="bg-white/20 p-2 rounded-full hover:bg-white/30 transition">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            <div id="quiz-questions-area" class="p-8 overflow-y-auto flex-1 space-y-8 bg-slate-50"></div>
-            <div class="p-6 border-t border-slate-200 bg-white">
-                <button onclick="submitQuiz()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg text-lg flex justify-center items-center gap-2">
-                    تسليم الإجابات <i data-lucide="send" class="w-5 h-5"></i>
-                </button>
             </div>
         </div>
     </div>

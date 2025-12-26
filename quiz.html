@@ -80,15 +80,20 @@
             const courseId = params.get('courseId');
 
             if (!courseId) {
-                // استخدام window.location.assign لتوجيه أكثر أمانًا
-                // أو استخدام مسار نسبي بسيط "./courses.html"
-                try {
-                    window.location.href = "courses.html";
-                } catch (e) {
-                    console.error("Error redirecting:", e);
-                    // محاولة بديلة في حالة الفشل
-                    document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h1>خطأ: لم يتم تحديد الكورس</h1><a href="courses.html">العودة للكورسات</a></div>';
-                }
+                // في حالة عدم وجود معرف الكورس، نعرض رسالة واضحة بدلاً من التوجيه التلقائي الذي قد يسبب أخطاء
+                document.body.innerHTML = `
+                    <div class="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-center p-4">
+                        <div class="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-slate-200">
+                            <div class="bg-yellow-100 p-4 rounded-full inline-block mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-600"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                            </div>
+                            <h1 class="text-2xl font-black text-slate-800 mb-2">لم يتم تحديد كورس!</h1>
+                            <p class="text-slate-600 mb-6">يرجى اختيار كورس من القائمة لبدء الاختبار.</p>
+                            <a href="courses.html" class="block w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg">
+                                الذهاب للكورسات
+                            </a>
+                        </div>
+                    </div>`;
                 return;
             }
 
