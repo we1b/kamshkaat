@@ -16,9 +16,10 @@
     <script src="js/auth.js"></script>
     <script src="js/kameshkah-data.js"></script>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-50 overflow-hidden">
+    
     <!-- Navbar -->
-    <nav class="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center fixed top-0 w-full z-50">
+    <nav class="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center fixed top-0 w-full z-50 h-16">
         <div class="flex items-center gap-3">
             <a href="dashboard.html" class="bg-slate-100 p-2 rounded-lg hover:bg-slate-200 transition"><i data-lucide="arrow-right" class="w-5 h-5"></i></a>
             <h1 id="course-title-nav" class="font-bold text-slate-800 truncate max-w-[200px] md:max-w-md">جاري التحميل...</h1>
@@ -28,62 +29,96 @@
             <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
                 <div id="progress-bar" class="h-full bg-emerald-500 w-0 transition-all duration-500"></div>
             </div>
+            <!-- زرار الامتحان -->
+            <button id="take-quiz-btn" onclick="openQuizModal()" class="hidden bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold px-3 py-2 rounded-lg transition animate-pulse shadow-lg flex items-center gap-1">
+                <i data-lucide="award" class="w-4 h-4"></i> ابدأ الاختبار
+            </button>
         </div>
     </nav>
 
     <div class="pt-16 flex flex-col lg:flex-row h-screen">
-        <!-- منطقة العرض -->
-        <div class="flex-1 flex flex-col overflow-y-auto">
+        <!-- منطقة العرض (يمين) -->
+        <div class="flex-1 flex flex-col overflow-y-auto bg-slate-50 relative scroll-smooth">
             
-            <!-- 1. مشغل الفيديو (يظهر للفيديوهات) -->
+            <!-- 1. مشغل الفيديو -->
             <div id="video-container" class="aspect-video bg-black relative group hidden">
                 <iframe id="video-player" class="w-full h-full" src="" frameborder="0" allowfullscreen></iframe>
             </div>
 
-            <!-- 2. قارئ النصوص (يظهر للكورسات الكتابية) -->
-            <div id="text-viewer" class="hidden bg-white p-8 md:p-12 border-b border-slate-200 min-h-[50vh]">
+            <!-- 2. مشغل الصوت (جديد 🎧) -->
+            <div id="audio-container" class="hidden bg-slate-900 p-10 flex flex-col items-center justify-center min-h-[300px]">
+                <div class="w-32 h-32 bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-2xl animate-pulse">
+                    <i data-lucide="headphones" class="w-16 h-16 text-emerald-400"></i>
+                </div>
+                <h3 id="audio-title" class="text-white text-xl font-bold mb-6">عنوان الدرس الصوتي</h3>
+                <audio id="audio-player" controls class="w-full max-w-md"></audio>
+            </div>
+
+            <!-- 3. قارئ النصوص (محدث) -->
+            <div id="text-viewer" class="hidden">
                 <div class="max-w-3xl mx-auto">
-                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full mb-4 inline-block">درس قراءة 📖</span>
-                    <h2 id="text-lesson-title" class="text-3xl font-black text-slate-900 mb-8"></h2>
-                    <div id="text-lesson-content" class="text-slate-700 leading-9 text-lg font-medium space-y-6">
-                        <!-- المحتوى النصي هينزل هنا -->
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full mb-6 inline-block">درس قراءة 📖</span>
+                    <h2 id="text-lesson-title" class="text-3xl font-black text-slate-900 mb-8 leading-snug"></h2>
+                    <div id="text-lesson-content">
+                        <!-- المحتوى النصي -->
+                    </div>
+                    
+                    <!-- زرار إنهاء الدرس -->
+                    <div class="mt-12 text-center border-t border-slate-100 pt-8 pb-8">
+                        <button onclick="finishCurrentLesson()" class="bg-slate-800 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-900 transition flex items-center gap-2 mx-auto shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            أتممت هذا الدرس <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- التابات -->
-            <div class="p-6">
+            <!-- التابات (ملحقات فقط) -->
+            <div class="p-6 pb-20">
                 <div class="flex gap-4 border-b border-slate-200 mb-6">
-                    <button onclick="switchTab('desc')" class="tab-btn active text-emerald-600 border-b-2 border-emerald-600 pb-2 font-bold px-4">الوصف</button>
-                    <button onclick="switchTab('quiz')" class="tab-btn text-slate-500 pb-2 font-bold px-4 hover:text-emerald-600">الاختبار النهائي 🎓</button>
+                    <button class="text-emerald-600 border-b-2 border-emerald-600 pb-2 font-bold px-4">الملحقات 📂</button>
                 </div>
-
-                <div id="tab-desc" class="tab-content">
-                    <h2 class="text-xl font-bold text-slate-900 mb-2">تعليمات:</h2>
-                    <p class="text-slate-600">اقرأ الدرس بتمعن، وطبق الاختبارات الموجودة بداخله مع نفسك بصدق.</p>
-                </div>
-
-                <div id="tab-quiz" class="tab-content hidden">
-                    <div id="quiz-locked" class="text-center py-10 bg-slate-100 rounded-2xl border-2 border-dashed border-slate-300">
-                        <i data-lucide="lock" class="w-12 h-12 text-slate-400 mx-auto mb-3"></i>
-                        <h3 class="font-bold text-slate-700">الاختبار النهائي مغلق</h3>
-                        <p class="text-sm text-slate-500">لازم تخلص كل الدروس الأول!</p>
-                    </div>
-                    <div id="quiz-area" class="hidden">
-                        <!-- الأسئلة هتنزل هنا -->
-                    </div>
-                </div>
+                <ul id="attachments-list" class="space-y-3">
+                    <!-- الملحقات -->
+                </ul>
             </div>
         </div>
 
-        <!-- القائمة الجانبية -->
-        <div class="w-full lg:w-96 bg-white border-r border-slate-200 flex flex-col h-1/2 lg:h-full overflow-hidden">
-            <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 flex justify-between">
+        <!-- القائمة الجانبية (يسار) -->
+        <div class="w-full lg:w-96 bg-white border-r border-slate-200 flex flex-col h-1/2 lg:h-full overflow-hidden shrink-0 z-20 shadow-xl">
+            <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 flex justify-between items-center shadow-sm">
                 <span>محتوى الكورس</span>
                 <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md" id="lessons-count">0 درس</span>
             </div>
-            <div id="playlist" class="overflow-y-auto flex-1 p-2 space-y-2">
+            <div id="playlist" class="overflow-y-auto flex-1 p-3 space-y-2 pb-20">
                 <!-- الدروس -->
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة الاختبار (Quiz Modal Separated) -->
+    <div id="quiz-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden transform scale-100 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <!-- هيدر النافذة -->
+            <div class="bg-emerald-600 p-6 text-white flex justify-between items-center">
+                <div>
+                    <h3 class="font-black text-2xl">الاختبار النهائي 🎓</h3>
+                    <p class="text-emerald-100 text-sm">جاوب 4 أسئلة صح عشان تاخد الشهادة</p>
+                </div>
+                <button onclick="document.getElementById('quiz-modal').classList.add('hidden')" class="bg-white/20 p-2 rounded-full hover:bg-white/30 transition">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <!-- جسم النافذة (قابل للسكرول) -->
+            <div id="quiz-questions-area" class="p-8 overflow-y-auto flex-1 space-y-8 bg-slate-50">
+                <!-- الأسئلة هتنزل هنا -->
+            </div>
+
+            <!-- فوتر النافذة -->
+            <div class="p-6 border-t border-slate-200 bg-white">
+                <button onclick="submitQuiz()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg text-lg flex justify-center items-center gap-2">
+                    تسليم الإجابات <i data-lucide="send" class="w-5 h-5"></i>
+                </button>
             </div>
         </div>
     </div>
