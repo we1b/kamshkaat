@@ -29,10 +29,7 @@
             <div class="w-32 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                 <div id="progress-bar" class="h-full bg-emerald-500 w-0 transition-all duration-500"></div>
             </div>
-            <!-- زرار الامتحان موجود علطول -->
-            <button onclick="openQuizModal()" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold px-3 py-2 rounded-lg transition shadow-lg flex items-center gap-1">
-                <i data-lucide="award" class="w-4 h-4"></i> الاختبار
-            </button>
+            <!-- ⛔ شلت زرار الامتحان من هنا ⛔ -->
         </div>
     </nav>
 
@@ -63,10 +60,10 @@
                         <!-- المحتوى النصي -->
                     </div>
                     
-                    <!-- زرار إنهاء الدرس -->
+                    <!-- زرار إنهاء الدرس (التالي) -->
                     <div class="mt-12 text-center border-t border-slate-100 pt-8 pb-8">
                         <button onclick="finishCurrentLesson()" class="bg-slate-800 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-900 transition flex items-center gap-2 mx-auto shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                            أتممت هذا الدرس <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            الدرس التالي <i data-lucide="arrow-left" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
@@ -90,39 +87,12 @@
                 <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md" id="lessons-count">0 درس</span>
             </div>
             <div id="playlist" class="overflow-y-auto flex-1 p-3 space-y-2 pb-20">
-                <!-- الدروس هتنزل هنا + الاختبار في الآخر -->
+                <!-- الدروس هتنزل هنا -->
             </div>
         </div>
     </div>
 
-    <!-- نافذة الاختبار (Quiz Modal) - مع زر خروج -->
-    <div id="quiz-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm transition-opacity duration-300">
-        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden transform scale-100 transition-transform duration-300 flex flex-col max-h-[90vh]">
-            <!-- هيدر النافذة -->
-            <div class="bg-emerald-600 p-6 text-white flex justify-between items-center">
-                <div>
-                    <h3 class="font-black text-2xl">الاختبار النهائي 🎓</h3>
-                    <p class="text-emerald-100 text-sm">جاوب صح وخد الشهادة!</p>
-                </div>
-                <!-- 👇 زرار الخروج المنقذ -->
-                <button onclick="document.getElementById('quiz-modal').classList.add('hidden')" class="bg-white/20 p-2 rounded-full hover:bg-white/30 transition text-white">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            
-            <!-- جسم النافذة (قابل للسكرول) -->
-            <div id="quiz-questions-area" class="p-8 overflow-y-auto flex-1 space-y-8 bg-slate-50">
-                <!-- الأسئلة هتنزل هنا -->
-            </div>
-
-            <!-- فوتر النافذة -->
-            <div class="p-6 border-t border-slate-200 bg-white">
-                <button onclick="submitQuiz()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg text-lg flex justify-center items-center gap-2">
-                    تسليم الإجابات <i data-lucide="send" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
-    </div>
+    <!-- ⛔ مسحت نافذة الاختبار نهائياً ⛔ -->
 
     <script src="js/watch.js"></script>
 </body>
