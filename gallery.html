@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كمشكاة | معرض التصميمات</title>
+    <link rel="icon" type="image/png" href="images/logo.png"> <!-- تأكد إن اللوجو برده في images -->
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+</head>
+<body data-page="gallery">
+    <!-- الخلفية من images مباشرة -->
+    <div class="fixed-bg"><img src="images/bg.jpg" onerror="this.style.display='none'"></div>
+    <div id="header-ph"></div> 
+
+    <!-- Lightbox -->
+    <div id="lightbox" onclick="closeLightbox()" class="fixed inset-0 z-[9999] hidden bg-black/95 backdrop-blur-md flex items-center justify-center p-2">
+        <button class="absolute top-5 right-5 bg-white/10 text-white p-3 rounded-full hover:bg-white/20 transition z-50">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+        <img id="lightbox-img" src="" class="max-h-[90vh] max-w-full rounded-lg shadow-2xl object-contain" onclick="event.stopPropagation()">
+        <a id="lightbox-download" href="#" download class="absolute bottom-8 bg-emerald-600 text-white px-8 py-3 rounded-full font-bold shadow-2xl flex items-center gap-2 hover:bg-emerald-700 transition transform hover:scale-105" onclick="event.stopPropagation()">
+            <i data-lucide="download" class="w-5 h-5"></i> تحميل
+        </a>
+    </div>
+
+    <main class="pt-32 px-4 container mx-auto min-h-screen pb-12">
+        <div class="text-center mb-12 fade-in">
+            <h1 class="text-3xl md:text-5xl font-black text-emerald-900 mb-2">معرض التصميمات</h1>
+            <p class="text-slate-600 font-bold text-lg">إبداع متجدد . لمسة فنية</p>
+        </div>
+
+        <div id="gallery-grid" class="masonry-grid"></div>
+
+        <div class="text-center mt-12">
+            <button id="load-more-gallery" class="bg-white text-emerald-800 px-8 py-3 rounded-full font-bold hover:bg-emerald-50 transition border border-emerald-200 shadow-md inline-flex items-center gap-2">
+                عرض المزيد <i data-lucide="arrow-down" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </main>
+
+    <div id="footer-ph"></div>
+
+    <script>
+        let visibleGalleryCount = 0;
+        const GALLERY_INCREMENT = 10; // عدد الصور في كل ضغطة
+        const MAX_IMAGES = 2000; // حد أقصى للصور
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('gallery-grid');
+            if(grid) grid.innerHTML = '';
+            loadGalleryBatch();
+
+            document.getElementById('load-more-gallery').addEventListener('click', () => {
+                loadGalleryBatch();
+            });
+        });
+
+        function loadGalleryBatch() {
+            const grid = document.getElementById('gallery-grid');
+            const btn = document.getElementById('load-more-gallery');
+            
+            let start = visibleGalleryCount + 1;
+            let end = start + GALLERY_INCREMENT - 1;
+
+            if (start > MAX_IMAGES) {
+                btn.style.display = 'none';
+                return;
+            }
+
+            let html = '';
+            for(let i=start; i<=end; i++) {
+                // 👇 السيستم الجديد: 1.webp, 2.webp في فولدر images مباشرة
+                const imgSrcWebp = `images/${i}.webp`;
+                const imgSrcJpg = `images/${i}.jpg`; // احتياطي
+
+                html += `
+                <div class="break-inside-avoid mb-6 glass-panel rounded-2xl overflow-hidden group relative bg-white/40 border border-white hover:shadow-xl transition duration-300">
+                    <div class="cursor-pointer relative" onclick="openGalleryLightbox(this.querySelector('img').src)">
+                        
+                        <!-- بيحاول يحمل الـ webp الأول، لو مش موجود بيحمل jpg، لو مش موجود بيحط صورة وهمية -->
+                        <img src="${imgSrcWebp}" loading="lazy" class="w-full h-auto block" 
+                             onerror="this.onerror=null; this.src='${imgSrcJpg}'; this.onerror=function(){this.src='https://placehold.co/600x800/dcfce7/065f46?text=Image+${i}'}">
+                        
+                        <div class="absolute inset-0 bg-emerald-900/20 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                            <div class="bg-white/90 text-emerald-900 p-3 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition">
+                                <i data-lucide="zoom-in" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 flex justify-between items-center bg-white/80 backdrop-blur-md border-t border-white/50">
+                        <button onclick="toggleLike(${i})" class="flex items-center gap-1.5 text-slate-500 hover:text-red-500 transition group/like">
+                            <i data-lucide="heart" class="w-5 h-5 transition transform group-active/like:scale-125" id="heart-${i}"></i>
+                            <span id="likes-count-${i}" class="text-xs font-bold font-sans mt-0.5">0</span>
+                        </button>
+
+                        <button onclick="shareGalleryImage(this.closest('.break-inside-avoid').querySelector('img').src)" class="text-emerald-600 hover:bg-emerald-50 p-2 rounded-lg transition" title="مشاركة">
+                            <i data-lucide="share-2" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>`;
+            }
+
+            grid.insertAdjacentHTML('beforeend', html);
+            visibleGalleryCount = end;
+            lucide.createIcons();
+            
+            if(typeof listenToLikes === 'function') {
+                listenToLikes(visibleGalleryCount);
+            }
+        }
+
+        function openGalleryLightbox(src) {
+            const lb = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            const dl = document.getElementById('lightbox-download');
+            img.src = src;
+            dl.href = src;
+            lb.classList.remove('hidden');
+            lb.classList.add('flex');
+        }
+
+        function closeLightbox() {
+            const lb = document.getElementById('lightbox');
+            lb.classList.add('hidden');
+            lb.classList.remove('flex');
+        }
+
+        function shareGalleryImage(src) {
+            if (navigator.share) {
+                navigator.share({ title: 'تصميم من كمشكاة', url: src }).catch(console.error);
+            } else {
+                navigator.clipboard.writeText(src);
+                alert('تم نسخ رابط الصورة!');
+            }
+        }
+    </script>
+</body>
+</html>

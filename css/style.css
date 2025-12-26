@@ -1,0 +1,82 @@
+/* Path: css/style.css */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+/* --- المتغيرات العامة --- */
+:root {
+    --primary-color: #059669; /* Emerald 600 */
+    --primary-dark: #064e3b; /* Emerald 900 */
+    --text-dark: #1e293b;
+    /* خلفية احتياطية */
+    --bg-gradient: linear-gradient(135deg, #fef9c3 0%, #dcfce7 50%, #cffafe 100%);
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    color: var(--text-dark);
+    overflow-x: hidden;
+
+    /* --- 🛡️ نظام الحماية من النسخ --- */
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* --- الخلفية الثابتة (Fixed Background) --- */
+.fixed-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+}
+.fixed-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.95); /* تغميق بسيط عشان الكلام يوضح */
+}
+
+/* --- التأثير الزجاجي (Glassmorphism) --- */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.25); /* شفافية عالية */
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* تحسين شكل الحقول والأزرار جوه الزجاج */
+.glass-panel input {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.glass-panel input:focus {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+}
+
+/* --- Lightbox --- */
+#lightbox {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.85); /* خلفية غامقة للتركيز */
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; transition: 0.3s;
+}
+#lightbox.active { opacity: 1; visibility: visible; }
+#lightbox img { 
+    max-height: 85vh; max-width: 90vw; 
+    border-radius: 12px; 
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+}
+
+/* --- Masonry Grid --- */
+.masonry-grid { column-count: 1; column-gap: 1.5rem; }
+@media (min-width: 640px) { .masonry-grid { column-count: 2; } }
+@media (min-width: 1024px) { .masonry-grid { column-count: 3; } }
+.break-inside-avoid { break-inside: avoid; margin-bottom: 1.5rem; }
+
+/* --- Animation --- */
+.fade-in { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }

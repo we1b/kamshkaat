@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كمشكاة | تواصل معنا</title>
+    <link rel="icon" type="image/png" href="images/ui/logo.png">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/main.js"></script>
+</head>
+<body data-page="contact">
+    <div class="fixed-bg"><img src="images/ui/bg.jpg"></div>
+    <div id="header-ph"></div>
+
+    <main class="pt-32 px-4 container mx-auto max-w-6xl min-h-screen pb-12 fade-in">
+        <h1 class="text-3xl font-black text-emerald-900 mb-8 text-center md:text-right border-b-4 md:border-b-0 md:border-r-4 border-emerald-500 pb-2 md:pr-4 inline-block md:block">تواصل معنا</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- الكارت الأول: مصطفى عبد الناصر -->
+            <div class="glass-panel p-8 rounded-3xl text-center hover:-translate-y-2 transition duration-500">
+                <div class="w-32 h-32 rounded-3xl mx-auto mb-6 bg-white p-1 shadow-lg transform rotate-3 hover:rotate-0 transition duration-500">
+                    <!-- 👇 التعديل هنا: المسار الجديد للصورة -->
+                    <img src="images/ui/me.jpg" class="w-full h-full object-cover rounded-2xl" onerror="this.src='https://placehold.co/400x400/dcfce7/065f46?text=Mostafa'">
+                </div>
+                <h2 class="text-3xl font-black text-emerald-900 mb-2">مصطفى عبد الناصر</h2>
+                <div class="flex flex-wrap justify-center gap-2 mb-8">
+                    <span class="bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-bold">Graphic Designer</span>
+                    <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-bold">Content Creator</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                   <a href="https://www.facebook.com/MostafaKmshkat" target="_blank" class="contact-link facebook"><i data-lucide="facebook"></i> Facebook</a>
+                   <a href="https://www.instagram.com/mostafakmshkat/" target="_blank" class="contact-link instagram"><i data-lucide="instagram"></i> Instagram</a>
+                   <a href="https://x.com/Mostafakamishka" target="_blank" class="contact-link twitter"><i data-lucide="twitter"></i> X (Twitter)</a>
+                   <a href="https://t.me/Mostafa_Kmshkat" target="_blank" class="contact-link telegram"><i data-lucide="send"></i> Telegram</a>
+                   <a href="https://www.linkedin.com/in/mostafakamishka" target="_blank" class="contact-link linkedin"><i data-lucide="linkedin"></i> LinkedIn</a>
+                   <a href="https://www.tiktok.com/@mostafakamishkaa" target="_blank" class="contact-link tiktok"><i data-lucide="video"></i> TikTok</a>
+                </div>
+                
+                <a href="https://www.behance.net/mostafaabdelnasser" target="_blank" class="mt-4 block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-200">
+                    معرض أعمالي علي Behance
+                </a>
+            </div>
+
+            <!-- الكارت الثاني: كمشكاة -->
+            <div class="glass-panel p-8 rounded-3xl text-center border-2 border-emerald-100">
+                <div class="w-24 h-24 rounded-full mx-auto mb-6 bg-white p-2 shadow-lg">
+                    <img src="images/ui/logo.png" class="w-full h-full object-contain">
+                </div>
+                <h2 class="text-3xl font-black text-emerald-900 mb-2">كمشكاة</h2>
+                <p class="text-slate-600 font-bold mb-8">المجتمع الرسمي والمحتوى الحصري</p>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="https://www.facebook.com/profile.php?id=61583541613263" target="_blank" class="contact-link facebook col-span-2 md:col-span-1">
+                        <i data-lucide="facebook"></i> Page
+                    </a>
+                    <a href="https://www.instagram.com/kmshka.official/" target="_blank" class="contact-link instagram col-span-2 md:col-span-1">
+                        <i data-lucide="instagram"></i> Instagram
+                    </a>
+                    <a href="https://x.com/KmshkaOfficial" target="_blank" class="contact-link twitter col-span-2 md:col-span-1">
+                        <i data-lucide="twitter"></i> X (Official)
+                    </a>
+                    <a href="https://whatsapp.com/channel/0029VaobuNjKgsNwqB3rtv3B" target="_blank" class="contact-link whatsapp col-span-2 md:col-span-1">
+                        <i data-lucide="message-circle"></i> WhatsApp
+                    </a>
+                    <a href="https://t.me/kamshkaonline" target="_blank" class="contact-link telegram col-span-2 md:col-span-1">
+                        <i data-lucide="send"></i> Channel
+                    </a>
+                    <a href="https://t.me/Kamshka_Communtiy" target="_blank" class="contact-link community col-span-2 md:col-span-1">
+                        <i data-lucide="users"></i> Community
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-ph"></div>
+
+    <style>
+        .contact-link {
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            padding: 0.75rem; border-radius: 0.75rem; font-weight: bold; font-size: 0.875rem;
+            background: white; color: #334155; border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+        }
+        .contact-link:hover { transform: translateY(-2px); color: white; border-color: transparent; }
+        .contact-link.facebook:hover { background: #1877F2; }
+        .contact-link.instagram:hover { background: #E4405F; }
+        .contact-link.twitter:hover { background: #000000; }
+        .contact-link.telegram:hover { background: #0088cc; }
+        .contact-link.linkedin:hover { background: #0A66C2; }
+        .contact-link.tiktok:hover { background: #000000; }
+        .contact-link.whatsapp:hover { background: #25D366; }
+        .contact-link.community:hover { background: #8b5cf6; }
+    </style>
+</body>
+</html>

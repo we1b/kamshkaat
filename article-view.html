@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>كمشكاة | قراءة المقال</title>
+    <link rel="icon" type="image/png" href="images/ui/logo.png">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/main.js"></script>
+</head>
+<body data-page="articles">
+    <div class="fixed-bg"><img src="images/ui/bg.jpg"></div>
+    <div id="header-ph"></div>
+
+    <main class="pt-32 px-4 container mx-auto max-w-4xl min-h-screen fade-in pb-12">
+        <a href="articles.html" class="inline-flex items-center gap-2 text-emerald-800 font-bold mb-6 bg-white/50 px-4 py-2 rounded-lg hover:bg-white transition">
+            <i data-lucide="arrow-right"></i> رجوع للمقالات
+        </a>
+
+        <article class="glass-panel rounded-3xl overflow-hidden bg-white/80 shadow-2xl">
+            <img id="art-img" src="" class="w-full h-64 md:h-96 object-cover bg-slate-100">
+            <div class="p-8 md:p-12">
+                <h1 id="art-title" class="text-3xl md:text-5xl font-black mb-6 text-emerald-900 leading-tight">...</h1>
+                <div class="flex items-center gap-4 text-slate-500 text-sm font-bold mb-8 border-b border-slate-100 pb-4">
+                    <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-4 h-4"></i> <span id="art-date"></span></span>
+                    <span class="flex items-center gap-1"><i data-lucide="user" class="w-4 h-4"></i> مصطفى كمشكاة</span>
+                </div>
+                <div id="art-content" class="text-slate-800 leading-loose text-lg font-medium space-y-4">
+                    <!-- المحتوى هنا -->
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <div id="footer-ph"></div>
+
+    <script>
+        // نفس الداتا عشان نربط الصفحتين ببعض (في الحقيقة هتكون في داتابيز)
+        const articlesDB = [
+            {
+                id: 1,
+                title: "ازاي تبدأ فريلانسينج وأنت طالب؟",
+                date: "10 ديسمبر 2025",
+                img: "images/articles/freelance-tips.webp",
+                content: `<p>العمل الحر مش مجرد تريند، ده أسلوب حياة...</p><p>أول خطوة عشان تبدأ هي إنك تحدد مهارة واحدة وتتقنها...</p>`
+            },
+            {
+                id: 2,
+                title: "أهمية البراندينج الشخصي للمصممين",
+                date: "05 ديسمبر 2025",
+                img: "images/articles/branding.webp",
+                content: `<p>البراند الشخصي هو اللي الناس بتقوله عليك لما تخرج من الأوضة...</p>`
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const article = articlesDB.find(a => a.id == id);
+
+            if(article) {
+                document.getElementById('art-title').innerText = article.title;
+                document.getElementById('art-date').innerText = article.date;
+                document.getElementById('art-img').src = article.img;
+                document.getElementById('art-content').innerHTML = article.content;
+            } else {
+                document.getElementById('art-title').innerText = "المقال غير موجود 🤷‍♂️";
+                document.getElementById('art-content').innerText = "تأكد من الرابط وحاول مرة تانية.";
+            }
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

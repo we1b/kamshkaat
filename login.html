@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كمشكاة | تسجيل الدخول</title>
+    <link rel="icon" type="image/png" href="images/ui/logo.png">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- مكتبات Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <!-- ملفاتنا -->
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+</head>
+<body data-page="login">
+    <div class="fixed-bg"><img src="images/ui/bg.jpg"></div>
+    <div id="header-ph"></div>
+
+    <main class="pt-32 px-4 container mx-auto min-h-screen flex items-center justify-center pb-20 fade-in">
+        <div class="glass-panel p-8 md:p-12 rounded-3xl w-full max-w-lg bg-white/70 shadow-2xl border-white relative overflow-hidden">
+            <div class="text-center mb-8 relative z-10">
+                <img src="images/ui/logo.png" class="w-20 h-20 mx-auto mb-4 drop-shadow-md">
+                <h1 class="text-3xl font-black text-emerald-900 mb-2">أهلاً بيك تاني! 👋</h1>
+                <p class="text-slate-600 font-bold">جاهز تكمل رحلة التعلم؟</p>
+            </div>
+
+            <form id="login-form" class="space-y-5 relative z-10">
+                <div>
+                    <label class="block text-slate-700 font-bold mb-2 text-sm">البريد الإلكتروني</label>
+                    <div class="relative">
+                        <input type="email" id="email" required class="w-full bg-white/80 border border-emerald-100 rounded-xl px-4 py-3 ps-10 focus:outline-none focus:border-emerald-500 font-medium" placeholder="name@example.com">
+                        <i data-lucide="mail" class="absolute start-3 top-3.5 text-slate-400 w-5 h-5"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-700 font-bold mb-2 text-sm">كلمة المرور</label>
+                    <div class="relative">
+                        <input type="password" id="password" required class="w-full bg-white/80 border border-emerald-100 rounded-xl px-4 py-3 ps-10 focus:outline-none focus:border-emerald-500 font-medium" placeholder="********">
+                        <i data-lucide="lock" class="absolute start-3 top-3.5 text-slate-400 w-5 h-5"></i>
+                    </div>
+                    <div class="text-start mt-2">
+                        <a href="forgot-password.html" class="text-xs font-bold text-emerald-600 hover:text-emerald-800">نسيت كلمة السر؟ 😱</a>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 transition transform hover:-translate-y-1">
+                    تسجيل الدخول 🚀
+                </button>
+
+                <div class="relative my-6 text-center">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-300"></div></div>
+                    <span class="relative bg-white/50 px-4 text-sm text-slate-500 font-bold rounded-full">أو</span>
+                </div>
+
+                <button type="button" onclick="loginWithGoogle()" class="w-full bg-white hover:bg-slate-50 text-slate-700 font-bold py-3.5 rounded-xl border border-slate-200 shadow-sm transition flex items-center justify-center gap-3 hover:text-red-500 hover:border-red-200">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5"> الدخول بحساب جوجل
+                </button>
+            </form>
+
+            <div class="text-center mt-8 relative z-10">
+                <p class="text-slate-600 text-sm font-bold">
+                    ليس لديك حساب؟ <a href="signup.html" class="text-emerald-700 underline decoration-2 underline-offset-4 hover:text-emerald-900">أنشئ حساب جديد</a>
+                </p>
+            </div>
+        </div>
+    </main>
+    <div id="footer-ph"></div>
+
+    <script>
+        // ربط الفورم بدوال auth.js
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            loginWithEmail(email, password);
+        });
+    </script>
+</body>
+</html>

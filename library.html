@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 👈 أساسي للموبايل -->
+    <title>كمشكاة | المكتبة</title>
+    <link rel="icon" type="image/png" href="images/ui/logo.png">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/main.js"></script>
+</head>
+<body data-page="library">
+    <div class="fixed-bg"><img src="images/ui/bg.jpg"></div>
+    <div id="header-ph"></div>
+
+    <main class="pt-32 px-4 container mx-auto min-h-screen pb-12">
+        <div class="text-center mb-10 fade-in">
+            <div class="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <i data-lucide="library" class="w-10 h-10 text-blue-600"></i>
+            </div>
+            <h1 class="text-3xl md:text-5xl font-black text-emerald-900 mb-2">مكتبة كمشكاة</h1>
+            <p class="text-slate-600 font-bold">مصادر مختارة بعناية لتطوير مهاراتك</p>
+        </div>
+
+        <!-- شريط البحث (مفعل الآن) -->
+        <div class="max-w-md mx-auto mb-12 fade-in group relative">
+            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                <i data-lucide="search" class="w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition"></i>
+            </div>
+            <input type="text" id="book-search" class="block w-full p-4 pr-12 text-sm text-slate-900 border border-blue-100 rounded-full bg-white/90 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:bg-white transition-all shadow-md font-medium" placeholder="ابحث عن كتاب (مثلاً: العادات الذرية، Clean Code...)">
+        </div>
+
+        <!-- شبكة الكتب -->
+        <div id="library-grid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 fade-in delay-100">
+            <!-- الكتب هتنزل هنا -->
+        </div>
+    </main>
+
+    <div id="footer-ph"></div>
+
+    <script>
+        // بيانات الكتب (أمثلة للتجربة)
+        const books = [
+            {
+                title: "العادات الذرية",
+                author: "جيمس كلير",
+                cat: "تطوير ذات",
+                img: "https://placehold.co/300x450/fca5a5/ffffff?text=Atomic+Habits",
+                link: "#"
+            },
+            {
+                title: "Clean Code",
+                author: "روبرت مارتن",
+                cat: "برمجة",
+                img: "https://placehold.co/300x450/93c5fd/ffffff?text=Clean+Code",
+                link: "#"
+            },
+            {
+                title: "أبي الغني أبي الفقير",
+                author: "روبرت كيوساكي",
+                cat: "بيزنس",
+                img: "https://placehold.co/300x450/fcd34d/ffffff?text=Rich+Dad",
+                link: "#"
+            },
+            {
+                title: "سرقة مثل فنان",
+                author: "أوستن كليون",
+                cat: "إبداع",
+                img: "https://placehold.co/300x450/c4b5fd/ffffff?text=Steal+Like+Artist",
+                link: "#"
+            },
+            {
+                title: "فكر وازدد ثراءً",
+                author: "نابليون هيل",
+                cat: "بيزنس",
+                img: "https://placehold.co/300x450/86efac/ffffff?text=Think+Grow+Rich",
+                link: "#"
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderBooks(books);
+
+            // تشغيل البحث
+            document.getElementById('book-search').addEventListener('keyup', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = books.filter(b => b.title.toLowerCase().includes(term) || b.author.toLowerCase().includes(term));
+                renderBooks(filtered);
+            });
+        });
+
+        function renderBooks(data) {
+            const grid = document.getElementById('library-grid');
+            
+            if(data.length > 0){
+                grid.innerHTML = data.map(book => `
+                    <div class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-2 transition duration-300 group relative bg-white/80 border border-white">
+                        <div class="aspect-[2/3] overflow-hidden relative">
+                            <img src="${book.img}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            
+                            <!-- طبقة التحميل عند التحويم -->
+                            <div class="absolute inset-0 bg-blue-900/60 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center backdrop-blur-sm">
+                                <a href="${book.link}" target="_blank" class="bg-white text-blue-900 px-6 py-2 rounded-full font-bold flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition shadow-xl hover:bg-blue-50">
+                                    <i data-lucide="download"></i> تحميل
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 text-center">
+                            <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded-md font-bold mb-2 inline-block">${book.cat}</span>
+                            <h3 class="text-lg font-black text-slate-900 leading-tight mb-1 truncate" title="${book.title}">${book.title}</h3>
+                            <p class="text-sm text-slate-500 font-medium">${book.author}</p>
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            } else {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-16">
+                        <div class="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="book-x" class="w-8 h-8 text-slate-400"></i>
+                        </div>
+                        <p class="text-slate-500 font-bold text-lg">مفيش كتب بالاسم ده 🤷‍♂️</p>
+                        <p class="text-slate-400 text-sm">جرب تبحث عن حاجة تانية</p>
+                    </div>`;
+            }
+        }
+    </script>
+</body>
+</html>

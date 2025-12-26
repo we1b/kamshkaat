@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كمشكاة | مسارات التعلم</title>
+    <link rel="icon" type="image/png" href="images/ui/logo.png">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/main.js"></script>
+</head>
+<body data-page="courses">
+    <div class="fixed-bg"><img src="images/ui/bg.jpg"></div>
+    <div id="header-ph"></div>
+
+    <main class="pt-32 px-4 container mx-auto min-h-screen flex flex-col justify-center items-center pb-20 fade-in">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-black text-emerald-900 mb-4" data-i18n="courses_title">ماذا تريد أن تتعلم اليوم؟</h1>
+            <p class="text-slate-700 text-xl font-bold" data-i18n="courses_subtitle">اختار الطريقة اللي تناسبك في التعلم</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
+            <!-- كارت الأكاديمية (Kameshkah) - مجاني للشباب -->
+            <div class="glass-panel p-8 rounded-3xl hover:-translate-y-3 transition duration-500 relative overflow-hidden group border-emerald-400 border-2">
+                <div class="absolute top-0 right-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl z-10">مجاني بالكامل للشباب 🎁</div>
+                <div class="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition">
+                    <i data-lucide="users" class="w-10 h-10 text-emerald-700"></i>
+                </div>
+                <h2 class="text-3xl font-black text-emerald-900 mb-2 text-center" data-i18n="courses_academy">أكاديمية كمشكاة</h2>
+                <p class="text-slate-600 text-center mb-8 font-medium">
+                    كورسات ومنح مخصصة للشباب لتعليمهم وتطوير مهاراتهم. 
+                    <br>
+                    <strong>كل المحتوى هنا مجاني 100% حالياً</strong> لدعمك في رحلتك.
+                </p>
+                <a href="courses-kameshkah.html" class="block w-full bg-emerald-600 hover:bg-emerald-700 text-white text-center py-4 rounded-xl font-bold text-lg shadow-lg shadow-emerald-200 transition" data-i18n="btn_academy">
+                    تصفح الأكاديمية 🏫
+                </a>
+            </div>
+
+            <!-- كارت يوديمي (Udemy) - كوبونات -->
+            <div class="glass-panel p-8 rounded-3xl hover:-translate-y-3 transition duration-500 group border-white">
+                <div class="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl z-10">كوبونات مجانية 🔥</div>
+                <div class="bg-purple-100 w-20 h-20 rounded-full flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition">
+                    <i data-lucide="tags" class="w-10 h-10 text-purple-700"></i>
+                </div>
+                <h2 class="text-3xl font-black text-purple-900 mb-2 text-center" data-i18n="courses_udemy">كوبونات Udemy</h2>
+                <p class="text-slate-600 text-center mb-8 font-medium">
+                    بنوفرلك <strong>كوبونات حصرية</strong> للحصول على كورسات مدفوعة بشكل مجاني تماماً.
+                    <br>
+                    استغل الفرصة واتعلم من كورسات عالمية ببلاش.
+                </p>
+                <a href="courses-udemy.html" class="block w-full bg-purple-600 hover:bg-purple-700 text-white text-center py-4 rounded-xl font-bold text-lg shadow-lg shadow-purple-200 transition" data-i18n="btn_udemy">
+                    تصفح الكوبونات ▶️
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-ph"></div>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- ده مهم جداً للموبايل -->
+    <title>كمشكاة | يوديمي</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/main.js"></script>
+    <script src="js/udemy-data.js"></script>
+</head>
+<body data-page="courses">
+    <div class="fixed-bg"><img src="images/ui/bg.jpg"></div>
+    <div id="header-ph"></div>
+
+    <main class="pt-32 px-4 container mx-auto min-h-screen pb-12">
+        <h1 class="text-2xl md:text-3xl font-black text-purple-900 mb-8 border-r-4 border-purple-500 pr-4">كورسات يوديمي (كوبونات)</h1>
+        
+        <!-- Search & Filter Section -->
+        <div class="mb-10 fade-in space-y-6">
+            <!-- Animated Search Bar -->
+            <div class="relative max-w-xl mx-auto group">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <i data-lucide="search" class="w-5 h-5 text-slate-400 group-focus-within:text-purple-600 transition"></i>
+                </div>
+                <input type="text" id="search-input" 
+                    class="block w-full p-4 pr-10 text-sm text-slate-900 border border-slate-200 rounded-full bg-white/80 focus:ring-4 focus:ring-purple-200 focus:border-purple-500 focus:bg-white transition-all duration-300 shadow-sm focus:w-full" 
+                    placeholder="ابحث عن كورس (فوتوشوب، بايثون...)">
+            </div>
+
+            <!-- Category Filters (Scrollable on mobile if needed, or wrapped) -->
+            <div class="flex flex-wrap justify-center gap-2" id="category-filters">
+                <button class="filter-btn active px-4 md:px-6 py-2 rounded-full font-bold text-xs md:text-sm bg-purple-600 text-white shadow-md transition hover:scale-105" data-cat="all">الكل</button>
+                <button class="filter-btn px-4 md:px-6 py-2 rounded-full font-bold text-xs md:text-sm bg-white text-slate-600 hover:bg-purple-50 transition border border-slate-200" data-cat="graphic">جرافيك</button>
+                <button class="filter-btn px-4 md:px-6 py-2 rounded-full font-bold text-xs md:text-sm bg-white text-slate-600 hover:bg-purple-50 transition border border-slate-200" data-cat="programming">برمجة</button>
+                <button class="filter-btn px-4 md:px-6 py-2 rounded-full font-bold text-xs md:text-sm bg-white text-slate-600 hover:bg-purple-50 transition border border-slate-200" data-cat="business">بيزنس</button>
+                <button class="filter-btn px-4 md:px-6 py-2 rounded-full font-bold text-xs md:text-sm bg-white text-slate-600 hover:bg-purple-50 transition border border-slate-200" data-cat="marketing">تسويق</button>
+                <button class="filter-btn px-4 md:px-6 py-2 rounded-full font-bold text-xs md:text-sm bg-white text-slate-600 hover:bg-purple-50 transition border border-slate-200" data-cat="tech">تكنولوجيا</button>
+            </div>
+        </div>
+
+        <div id="udemy-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 fade-in">
+            <!-- الكورسات هتنزل هنا -->
+        </div>
+
+        <div class="text-center mt-12 fade-in" id="load-more-container">
+            <button id="load-more-udemy" class="bg-purple-600 text-white px-8 py-3 rounded-full font-bold hover:bg-purple-700 transition shadow-lg items-center gap-2 inline-flex">
+                عرض المزيد <i data-lucide="arrow-down" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </main>
+
+    <div id="footer-ph"></div>
+
+    <script>
+        let currentUdemyCount = 0;
+        const UDEMY_BATCH_SIZE = 6;
+        let activeCategory = 'all';
+        let searchQuery = '';
+        let filteredData = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // تهيئة الفلترة والبحث
+            filterData(); 
+            
+            document.getElementById('search-input').addEventListener('keyup', (e) => {
+                searchQuery = e.target.value.toLowerCase();
+                currentUdemyCount = 0;
+                filterData();
+            });
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => {
+                        b.classList.remove('bg-purple-600', 'text-white');
+                        b.classList.add('bg-white', 'text-slate-600');
+                    });
+                    e.target.classList.remove('bg-white', 'text-slate-600');
+                    e.target.classList.add('bg-purple-600', 'text-white');
+
+                    activeCategory = e.target.dataset.cat;
+                    currentUdemyCount = 0;
+                    filterData();
+                });
+            });
+
+            document.getElementById('load-more-udemy').addEventListener('click', () => {
+                renderBatch();
+            });
+        });
+
+        function filterData() {
+            const grid = document.getElementById('udemy-grid');
+            grid.innerHTML = '';
+
+            if(!window.udemyData) return;
+
+            filteredData = window.udemyData.filter(c => {
+                const matchCat = activeCategory === 'all' || c.cat === activeCategory;
+                const matchSearch = c.titleAr.toLowerCase().includes(searchQuery) || c.titleEn.toLowerCase().includes(searchQuery);
+                return matchCat && matchSearch;
+            });
+
+            if(filteredData.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-500 font-bold">مفيش كورسات بالاسم ده 🤷‍♂️</div>`;
+                document.getElementById('load-more-container').style.display = 'none';
+            } else {
+                document.getElementById('load-more-container').style.display = 'block';
+                renderBatch();
+            }
+        }
+
+        function renderBatch() {
+            const grid = document.getElementById('udemy-grid');
+            const btn = document.getElementById('load-more-udemy');
+            
+            const start = currentUdemyCount;
+            const end = start + UDEMY_BATCH_SIZE;
+            const batch = filteredData.slice(start, end);
+
+            if (end >= filteredData.length) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = 'inline-flex';
+            }
+
+            const html = batch.map(c => {
+                let catName = "عام";
+                let badgeColor = "bg-slate-500";
+                switch(c.cat) {
+                    case "tech": catName = "تكنولوجيا"; badgeColor = "bg-blue-500"; break;
+                    case "business": catName = "بيزنس"; badgeColor = "bg-emerald-500"; break;
+                    case "graphic": catName = "جرافيك"; badgeColor = "bg-pink-500"; break;
+                    case "programming": catName = "برمجة"; badgeColor = "bg-indigo-500"; break;
+                    case "marketing": catName = "تسويق"; badgeColor = "bg-orange-500"; break;
+                    case "development": catName = "تطوير ذات"; badgeColor = "bg-teal-500"; break;
+                }
+
+                return `
+                <div class="glass-panel rounded-2xl overflow-hidden group flex flex-col h-full hover:-translate-y-2 transition duration-300 fade-in">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="${c.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" onerror="this.src='https://placehold.co/600x400/8b5cf6/ffffff?text=Udemy'">
+                        <span class="absolute top-3 left-3 ${badgeColor} text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
+                            ${catName}
+                        </span>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col">
+                        <div class="flex items-center gap-1 text-xs text-slate-500 font-bold mb-2">
+                            <i data-lucide="calendar" class="w-3 h-3"></i> ${c.date || 'جديد'}
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 text-slate-900 leading-snug">${c.titleAr}</h3>
+                        <p class="text-slate-500 text-sm mb-4 line-clamp-2">${c.desc}</p>
+                        <div class="mt-auto flex gap-2">
+                            <a href="${c.url}" target="_blank" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg text-center font-bold transition text-sm flex items-center justify-center gap-1 shadow-md shadow-purple-200">
+                                احصل عليه <i data-lucide="external-link" class="w-3 h-3"></i>
+                            </a>
+                            <a href="course-details.html?id=${c.id}&type=udemy" class="px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg flex items-center justify-center transition border border-slate-200">
+                                <i data-lucide="info" class="w-5 h-5"></i>
+                            </a>
+                            <button onclick="shareLink('${c.titleAr}', '${c.url}')" class="px-3 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center transition border border-blue-200">
+                                <i data-lucide="share-2" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+
+            grid.insertAdjacentHTML('beforeend', html);
+            currentUdemyCount += batch.length;
+            lucide.createIcons();
+        }
+
+        function shareLink(title, url) {
+            if (navigator.share) {
+                navigator.share({ title: title, text: `كوبون مجاني: ${title}`, url: url }).catch(console.error);
+            } else {
+                navigator.clipboard.writeText(url);
+                alert('تم نسخ رابط الكورس! 😉');
+            }
+        }
+    </script>
+</body>
+</html>
