@@ -13,79 +13,69 @@ body {
     background: var(--bg-gradient);
     min-height: 100vh;
     color: var(--text-dark);
-    overflow-x: hidden;
+    /* 👇 حل مشكلة السكرول والتعليق */
+    overflow-x: hidden; 
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
 }
 
-/* --- إصلاح مشكلة تداخل النصوص (Text Viewer Fixes) --- */
+/* --- تنسيق قاعة المشاهدة الجديد (لحل تداخل النصوص) --- */
 #text-viewer {
-    background: #ffffff;
-    padding: 3rem 2rem !important;
-    min-height: 100vh;
-    height: auto !important;
-    overflow: visible !important;
-    border-radius: 0 0 1.5rem 1.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    margin-bottom: 4rem;
+    /* مساحات داخلية كبيرة */
+    padding: 2rem !important; 
+    /* عشان الكلام ميركبش فوق بعضه */
+    overflow-wrap: break-word; 
+    word-wrap: break-word;
 }
 
 #text-lesson-content {
-    display: block !important;
-    font-size: 1.25rem !important;
-    line-height: 2.4 !important;
-    color: #334155 !important;
+    /* تباعد الأسطر (Line Height) */
+    line-height: 2 !important; 
+    /* حجم خط مريح */
+    font-size: 1.125rem; 
+    color: #334155;
     text-align: justify;
 }
 
-#text-lesson-content p, 
-#text-lesson-content div, 
-#text-lesson-content ul {
-    margin-bottom: 2.5rem !important;
-}
-
-#text-lesson-content h3 {
-    font-size: 1.8rem;
-    font-weight: 900;
-    color: #047857;
-    margin-top: 3rem !important;
-    margin-bottom: 2rem !important;
-    border-bottom: 2px solid #ecfdf5;
-    padding-bottom: 1rem;
-}
-
-#text-lesson-content h4 {
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: #1e293b;
-    margin-top: 2.5rem !important;
+/* تنسيق الفقرات والعناوين داخل الدرس النصي */
+#text-lesson-content p {
     margin-bottom: 1.5rem !important;
 }
 
-#text-lesson-content ul {
+#text-lesson-content h3 {
+    color: #047857;
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin-top: 2.5rem !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+#text-lesson-content ul, 
+#text-lesson-content ol {
+    margin-bottom: 1.5rem !important;
+    padding-right: 1.5rem;
     list-style-type: disc;
-    padding-right: 2rem;
-    background: #f8fafc;
-    padding: 2rem 3rem 2rem 1rem;
-    border-radius: 1rem;
-    border: 1px solid #e2e8f0;
 }
 
 #text-lesson-content li {
-    margin-bottom: 1rem !important;
+    margin-bottom: 0.75rem !important;
 }
 
-/* صناديق التنبيهات والاختبارات */
+/* صناديق مميزة داخل النص */
 .lesson-box {
-    padding: 2rem !important;
-    border-radius: 1rem;
-    border: 1px solid rgba(0,0,0,0.05);
-    margin: 3rem 0 !important;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 1.5rem !important;
+    border-radius: 0.75rem;
+    margin: 2rem 0 !important;
 }
-.box-green { background-color: #ecfdf5; border-right: 5px solid #10b981; }
-.box-yellow { background-color: #fefce8; border-right: 5px solid #eab308; }
-.box-red { background-color: #fef2f2; border-right: 5px solid #ef4444; }
+
+.box-green { border-right: 4px solid #10b981; background-color: #ecfdf5; }
+.box-yellow { border-right: 4px solid #f59e0b; background-color: #fffbeb; }
+.box-red { border-right: 4px solid #ef4444; background-color: #fef2f2; }
 
 /* --- باقي الستايل الأساسي --- */
 .fixed-bg { position: fixed; inset: 0; z-index: -1; }
