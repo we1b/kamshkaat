@@ -20,34 +20,70 @@ body {
     user-select: none;
 }
 
-/* --- إصلاح مشكلة تداخل النصوص في الدروس الكتابية --- */
+/* --- إصلاح مشكلة تداخل النصوص (Text Viewer Fixes) --- */
+/* الكود ده مخصص عشان يخلي الكلام في الدروس النصية واضح ومتباعد */
+#text-viewer {
+    background-color: #ffffff;
+    padding: 2rem !important;
+    border-radius: 0 0 1rem 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
 #text-lesson-content {
-    line-height: 2 !important; /* ارتفاع السطر يكون ضعف حجم الخط */
-    word-spacing: 2px;
+    /* تباعد الأسطر كبير عشان العربي */
+    line-height: 2.2 !important; 
+    font-size: 1.1rem !important;
+    color: #334155 !important;
 }
 
 #text-lesson-content p {
-    margin-bottom: 1.5rem !important; /* مسافة بين الفقرات */
+    /* مسافة كبيرة تحت كل فقرة */
+    margin-bottom: 2rem !important; 
+    display: block;
 }
 
-#text-lesson-content h3, 
+#text-lesson-content h3 {
+    color: #065f46;
+    font-size: 1.5rem;
+    font-weight: 900;
+    margin-top: 2.5rem !important;
+    margin-bottom: 1.5rem !important;
+    border-right: 4px solid #10b981;
+    padding-right: 1rem;
+}
+
 #text-lesson-content h4 {
+    color: #1e293b;
+    font-size: 1.25rem;
+    font-weight: 800;
     margin-top: 2rem !important;
     margin-bottom: 1rem !important;
-    line-height: 1.4;
 }
 
 #text-lesson-content ul, 
 #text-lesson-content ol {
-    margin-bottom: 1.5rem;
-    padding-right: 1.5rem; /* مسافة للنقط */
+    margin-bottom: 2rem !important;
+    padding-right: 1.5rem;
+    list-style-type: disc;
 }
 
 #text-lesson-content li {
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem !important;
+    padding-left: 0.5rem;
 }
 
-/* --- باقي الستايل --- */
+/* صناديق التطبيقات والاختبارات جوه النص */
+#text-lesson-content .bg-yellow-50,
+#text-lesson-content .bg-emerald-50,
+#text-lesson-content .bg-red-50 {
+    padding: 1.5rem !important;
+    border-radius: 1rem;
+    margin: 2rem 0 !important;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* --- الخلفية والعناصر الأخرى --- */
 .fixed-bg { position: fixed; inset: 0; z-index: -1; }
 .fixed-bg img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.95); }
 
