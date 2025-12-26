@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاختبار | كمشكاة</title>
+    <link rel="icon" type="image/png" href="images/ui/logo.png">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <script src="js/auth.js"></script>
+    <script src="js/kameshkah-data.js"></script>
+</head>
+<body class="bg-slate-50">
+    <div class="fixed-bg opacity-10"><img src="images/ui/bg.jpg"></div>
+
+    <main class="container mx-auto px-4 py-12 min-h-screen flex flex-col justify-center max-w-3xl">
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+            <!-- هيدر الاختبار -->
+            <div class="bg-emerald-600 p-8 text-white text-center">
+                <div class="inline-block p-4 rounded-full bg-white/20 mb-4">
+                    <i data-lucide="award" class="w-12 h-12"></i>
+                </div>
+                <h1 class="text-3xl font-black mb-2" id="quiz-title">اختبار الكورس</h1>
+                <p class="text-emerald-100 font-medium">أجب على الأسئلة التالية للحصول على الشهادة</p>
+            </div>
+
+            <!-- جسم الاختبار -->
+            <div class="p-8 md:p-12">
+                <div id="quiz-container" class="space-y-8">
+                    <!-- الأسئلة ستظهر هنا -->
+                    <div class="text-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+                        <p class="mt-4 text-slate-500">جاري تحميل الأسئلة...</p>
+                    </div>
+                </div>
+
+                <!-- النتائج -->
+                <div id="result-container" class="hidden text-center">
+                    <div id="result-icon" class="mb-4 flex justify-center"></div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2" id="result-title"></h2>
+                    <p class="text-slate-600 mb-8" id="result-message"></p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button onclick="location.reload()" class="px-6 py-3 rounded-xl border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 transition">
+                            حاول مرة أخرى 🔄
+                        </button>
+                        <a href="dashboard.html" class="px-6 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition shadow-lg">
+                            الذهاب للوحة التحكم 🏠
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- فوتر -->
+            <div class="bg-slate-50 p-6 border-t border-slate-100 flex justify-between items-center" id="quiz-footer">
+                <a href="javascript:history.back()" class="text-slate-500 font-bold hover:text-slate-700 transition flex items-center gap-2">
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i> خروج
+                </a>
+                <button onclick="submitQuiz()" class="bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg flex items-center gap-2">
+                    إنهاء الاختبار <i data-lucide="check" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentQuestions = [];
+        let currentCourse = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            const params = new URLSearchParams(window.location.search);
+            const courseId = params.get('courseId');
+
+            if (!courseId) {
+                // استخدام window.location.assign لتوجيه أكثر أمانًا
+                // أو استخدام مسار نسبي بسيط "./courses.html"
+                try {
+                    window.location.href = "courses.html";
+                } catch (e) {
+                    console.error("Error redirecting:", e);
+                    // محاولة بديلة في حالة الفشل
+                    document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h1>خطأ: لم يتم تحديد الكورس</h1><a href="courses.html">العودة للكورسات</a></div>';
+                }
+                return;
+            }
+
+            // تحميل الكورس
+            if (typeof window.kameshkahData !== 'undefined') {
+                currentCourse = window.kameshkahData.find(c => c.id == courseId);
+                if (currentCourse) {
+                    document.getElementById('quiz-title').innerText = `اختبار: ${currentCourse.titleAr}`;
+                    loadQuestions();
+                } else {
+                    document.getElementById('quiz-container').innerHTML = `<p class="text-center text-red-500 font-bold">عفواً، لم يتم العثور على بيانات هذا الكورس.</p>`;
+                    document.getElementById('quiz-footer').classList.add('hidden');
+                }
+            } else {
+                 console.error("kameshkahData is not defined. Make sure kameshkah-data.js is loaded.");
+                 document.getElementById('quiz-container').innerHTML = `<p class="text-center text-red-500 font-bold">خطأ في تحميل البيانات.</p>`;
+            }
+        });
+
+        function loadQuestions() {
+            const container = document.getElementById('quiz-container');
+            
+            // جلب الأسئلة (عشوائي 5)
+            if (currentCourse.quiz && currentCourse.quiz.length > 0) {
+                // خلط الأسئلة
+                const shuffled = [...currentCourse.quiz].sort(() => 0.5 - Math.random());
+                currentQuestions = shuffled.slice(0, 5); 
+            } else {
+                container.innerHTML = `<p class="text-center text-slate-500 font-bold">لا يوجد اختبار لهذا الكورس حالياً. يمكنك العودة لاحقاً.</p>`;
+                document.getElementById('quiz-footer').classList.add('hidden');
+                return;
+            }
+
+            let html = '';
+            currentQuestions.forEach((q, index) => {
+                html += `
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 question-block">
+                    <p class="font-bold text-slate-800 mb-4 text-lg flex gap-2">
+                        <span class="bg-emerald-100 text-emerald-800 w-8 h-8 flex items-center justify-center rounded-full text-sm shrink-0">${index + 1}</span>
+                        ${q.q}
+                    </p>
+                    <div class="space-y-3 mr-10">
+                        ${q.options.map((opt, i) => `
+                            <label class="flex items-center gap-3 cursor-pointer p-3 rounded-lg border border-slate-200 bg-white hover:border-emerald-400 hover:shadow-sm transition group">
+                                <div class="relative flex items-center">
+                                    <input type="radio" name="q${index}" value="${i}" class="peer w-5 h-5 accent-emerald-600 cursor-pointer">
+                                </div>
+                                <span class="text-slate-600 font-medium group-hover:text-slate-900">${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        window.submitQuiz = function() {
+            let score = 0;
+            let allAnswered = true;
+
+            currentQuestions.forEach((q, index) => {
+                const selected = document.querySelector(`input[name="q${index}"]:checked`);
+                if (!selected) {
+                    allAnswered = false;
+                } else if (parseInt(selected.value) === q.correct) {
+                    score++;
+                }
+            });
+
+            if (!allAnswered) {
+                alert("من فضلك جاوب على جميع الأسئلة قبل الإنهاء! 🧐");
+                return;
+            }
+
+            // حساب النتيجة
+            const percentage = Math.round((score / currentQuestions.length) * 100);
+            showResult(percentage);
+        }
+
+        function showResult(percentage) {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('quiz-footer').classList.add('hidden');
+            const resultContainer = document.getElementById('result-container');
+            const resultIcon = document.getElementById('result-icon');
+            const resultTitle = document.getElementById('result-title');
+            const resultMessage = document.getElementById('result-message');
+
+            resultContainer.classList.remove('hidden');
+
+            if (percentage >= 75) {
+                // نجاح
+                resultIcon.innerHTML = `<div class="bg-green-100 p-6 rounded-full animate-bounce"><i data-lucide="trophy" class="w-16 h-16 text-green-600"></i></div>`;
+                resultTitle.innerText = `ألف مبروك! نجحت بنسبة ${percentage}% 🎉`;
+                resultMessage.innerText = "أداء ممتاز! لقد أتممت الكورس بنجاح وتستحق الشهادة.";
+                
+                // حفظ الإنجاز في فايربيس (اختياري، يتطلب تسجيل دخول)
+                const user = firebase.auth().currentUser;
+                if(user) {
+                    firebase.database().ref(`users/${user.uid}/enrolledCourses/${currentCourse.id}`).update({
+                        status: 'completed',
+                        completedAt: new Date().toISOString(),
+                        score: percentage
+                    });
+                }
+
+            } else {
+                // رسوب
+                resultIcon.innerHTML = `<div class="bg-red-100 p-6 rounded-full"><i data-lucide="frown" class="w-16 h-16 text-red-600"></i></div>`;
+                resultTitle.innerText = `للاسف.. نتيجتك ${percentage}%`;
+                resultMessage.innerText = "تحتاج إلى 75% للنجاح. لا تيأس، راجع المحتوى وحاول مرة أخرى!";
+            }
+            
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
