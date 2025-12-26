@@ -76,11 +76,29 @@ function renderPlaylist() {
         `;
     }).join('');
 
-    // ⛔ مسحت زرار الاختبار من هنا نهائياً ⛔
+    // زرار إظهار باقي المحتوى (يظهر المحتوى المخفي عند الحاجة)
+    html += `
+        <div class="mt-6 pt-4 border-t border-slate-200 text-center">
+             <button id="show-more-content-btn" onclick="showMoreContent()" class="w-full bg-slate-100 text-slate-600 p-3 rounded-xl font-bold hover:bg-slate-200 transition text-sm flex items-center justify-center gap-2">
+                <i data-lucide="chevron-down" class="w-4 h-4"></i> إظهار باقي المحتوى
+            </button>
+        </div>
+    `;
 
     list.innerHTML = html;
     lucide.createIcons();
 }
+
+// دالة إظهار المحتوى الإضافي (بسيط جداً - لو فيه محتوى مخفي بيظهره)
+function showMoreContent() {
+    // هنا ممكن تضيف أي لوجيك لإظهار عناصر مخفية في القائمة لو القائمة طويلة جداً
+    // حالياً هو مجرد زرار توضيحي، ممكن نربطه بتحميل المزيد لو عندك دروس كتير
+    alert("سيتم عرض باقي المحتوى (لو وجد) أو الانتقال لأسفل القائمة."); 
+    // مثال عملي: سكرول لآخر القائمة
+    const playlist = document.getElementById('playlist');
+    playlist.scrollTop = playlist.scrollHeight;
+}
+
 
 function playLesson(index) {
     const lesson = currentCourse.lessons[index];
@@ -137,7 +155,6 @@ window.finishCurrentLesson = function() {
         if (currentIndex < currentCourse.lessons.length - 1) {
             playLesson(currentIndex + 1);
         } else {
-            // لو خلص، طلع رسالة بسيطة وسيبه مكانه
             alert("ألف مبروك! خلصت كل دروس الكورس 🎉");
             finishCourse(); // علم الكورس كـ مكتمل
         }
@@ -187,8 +204,6 @@ function renderAttachments() {
     }
     lucide.createIcons();
 }
-
-// ⛔ مسحت كل دوال الـ Quiz (openQuizModal, submitQuiz) ⛔
 
 function finishCourse() {
     const user = firebase.auth().currentUser;
