@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشاهدة الكورس | كمشكاة</title>
+    <link rel="icon" type="image/png" href="images/ui/logo.png">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <script src="js/auth.js"></script>
+    <script src="js/kameshkah-data.js"></script>
+</head>
+<body class="bg-slate-50">
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center fixed top-0 w-full z-50">
+        <div class="flex items-center gap-3">
+            <a href="dashboard.html" class="bg-slate-100 p-2 rounded-lg hover:bg-slate-200 transition"><i data-lucide="arrow-right" class="w-5 h-5"></i></a>
+            <h1 id="course-title-nav" class="font-bold text-slate-800 truncate max-w-[200px] md:max-w-md">جاري التحميل...</h1>
+        </div>
+        <div id="progress-container" class="flex items-center gap-2">
+            <div class="text-xs font-bold text-slate-500">التقدم: <span id="progress-text">0%</span></div>
+            <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-emerald-500 w-0 transition-all duration-500"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pt-16 flex flex-col lg:flex-row h-screen">
+        <!-- منطقة العرض -->
+        <div class="flex-1 flex flex-col overflow-y-auto">
+            
+            <!-- 1. مشغل الفيديو (يظهر للفيديوهات) -->
+            <div id="video-container" class="aspect-video bg-black relative group hidden">
+                <iframe id="video-player" class="w-full h-full" src="" frameborder="0" allowfullscreen></iframe>
+            </div>
+
+            <!-- 2. قارئ النصوص (يظهر للكورسات الكتابية) -->
+            <div id="text-viewer" class="hidden bg-white p-8 md:p-12 border-b border-slate-200 min-h-[50vh]">
+                <div class="max-w-3xl mx-auto">
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full mb-4 inline-block">درس قراءة 📖</span>
+                    <h2 id="text-lesson-title" class="text-3xl font-black text-slate-900 mb-8"></h2>
+                    <div id="text-lesson-content" class="text-slate-700 leading-9 text-lg font-medium space-y-6">
+                        <!-- المحتوى النصي هينزل هنا -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- التابات -->
+            <div class="p-6">
+                <div class="flex gap-4 border-b border-slate-200 mb-6">
+                    <button onclick="switchTab('desc')" class="tab-btn active text-emerald-600 border-b-2 border-emerald-600 pb-2 font-bold px-4">الوصف</button>
+                    <button onclick="switchTab('quiz')" class="tab-btn text-slate-500 pb-2 font-bold px-4 hover:text-emerald-600">الاختبار النهائي 🎓</button>
+                </div>
+
+                <div id="tab-desc" class="tab-content">
+                    <h2 class="text-xl font-bold text-slate-900 mb-2">تعليمات:</h2>
+                    <p class="text-slate-600">اقرأ الدرس بتمعن، وطبق الاختبارات الموجودة بداخله مع نفسك بصدق.</p>
+                </div>
+
+                <div id="tab-quiz" class="tab-content hidden">
+                    <div id="quiz-locked" class="text-center py-10 bg-slate-100 rounded-2xl border-2 border-dashed border-slate-300">
+                        <i data-lucide="lock" class="w-12 h-12 text-slate-400 mx-auto mb-3"></i>
+                        <h3 class="font-bold text-slate-700">الاختبار النهائي مغلق</h3>
+                        <p class="text-sm text-slate-500">لازم تخلص كل الدروس الأول!</p>
+                    </div>
+                    <div id="quiz-area" class="hidden">
+                        <!-- الأسئلة هتنزل هنا -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- القائمة الجانبية -->
+        <div class="w-full lg:w-96 bg-white border-r border-slate-200 flex flex-col h-1/2 lg:h-full overflow-hidden">
+            <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 flex justify-between">
+                <span>محتوى الكورس</span>
+                <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md" id="lessons-count">0 درس</span>
+            </div>
+            <div id="playlist" class="overflow-y-auto flex-1 p-2 space-y-2">
+                <!-- الدروس -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/watch.js"></script>
+</body>
+</html>
