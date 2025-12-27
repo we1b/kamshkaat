@@ -54,11 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
     loadNavbarFooter();       
     initProtection();         
     
-    // إصلاح: التأكد من تحميل Lucide
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     } else {
-        // محاولة إعادة التحميل بعد ثانية لو المكتبة لسه متحملتش
         setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 1000);
     }
 
@@ -74,7 +72,7 @@ function toggleLanguage() {
     currentLang = currentLang === 'ar' ? 'en' : 'ar';
     localStorage.setItem('kamshkat_lang', currentLang);
     setLanguage(currentLang);
-    loadNavbarFooter(); // إعادة بناء القائمة باللغة الجديدة
+    loadNavbarFooter(); 
     location.reload(); 
 }
 
@@ -103,7 +101,6 @@ function loadNavbarFooter() {
                 <span data-i18n="home_welcome">${t('home_welcome')}</span>
             </a>
             
-            <!-- Desktop Menu -->
             <div class="hidden md:flex items-center gap-1 bg-slate-100/50 p-1 rounded-full border border-slate-200">
                 <a href="index.html" class="nav-link px-4 py-2 rounded-full text-slate-600 font-bold text-sm hover:bg-white hover:text-emerald-600 transition" data-i18n="nav_home">${t('nav_home')}</a>
                 <a href="courses.html" class="nav-link px-4 py-2 rounded-full text-slate-600 font-bold text-sm hover:bg-white hover:text-emerald-600 transition" data-i18n="nav_courses">${t('nav_courses')}</a>
@@ -122,14 +119,12 @@ function loadNavbarFooter() {
                     <a href="login.html" class="bg-emerald-600 text-white px-5 py-2 rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg shadow-emerald-200 text-sm" data-i18n="nav_login">${t('nav_login')}</a>
                 </div>
 
-                <!-- Mobile Menu Button -->
                 <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg bg-slate-100 text-emerald-800 hover:bg-emerald-100 transition border border-slate-200">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Mobile Menu (Hidden by default) -->
         <div id="mobile-menu" class="hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 p-4 shadow-xl flex flex-col gap-2 md:hidden animate-fade-in-down origin-top">
             <a href="index.html" class="p-3 rounded-xl hover:bg-emerald-50 text-slate-700 font-bold flex items-center gap-3"><i data-lucide="home" class="w-5 h-5 text-emerald-600"></i> ${t('nav_home')}</a>
             <a href="courses.html" class="p-3 rounded-xl hover:bg-emerald-50 text-slate-700 font-bold flex items-center gap-3"><i data-lucide="zap" class="w-5 h-5 text-emerald-600"></i> ${t('nav_courses')}</a>
@@ -152,11 +147,9 @@ function loadNavbarFooter() {
     if(document.getElementById('header-ph')) document.getElementById('header-ph').innerHTML = navbarHTML;
     if(document.getElementById('footer-ph')) document.getElementById('footer-ph').innerHTML = footerHTML;
     
-    // إعادة تفعيل الأيقونات بعد بناء القائمة
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-// دالة منفصلة لفتح/غلق قائمة الموبايل
 window.toggleMobileMenu = function() {
     const menu = document.getElementById('mobile-menu');
     if (menu) {
@@ -164,7 +157,9 @@ window.toggleMobileMenu = function() {
     }
 }
 
-// دالة الاشتراك في الكورسات
+// -------------------------------------------------------------------------
+// 5. وظيفة الاشتراك في الكورس (محدثة: رسالة وتوجيه للداشبورد) 🔥
+// -------------------------------------------------------------------------
 window.enrollInCourse = function(courseId, courseType) {
     const user = firebase.auth().currentUser;
     if (!user) {
@@ -173,9 +168,7 @@ window.enrollInCourse = function(courseId, courseType) {
         return;
     }
 
-    // تحديد الكورس
     let course = null;
-    // التأكد من وجود البيانات قبل البحث
     if (courseType === 'udemy' && typeof window.udemyData !== 'undefined') {
         course = window.udemyData.find(c => c.id == courseId);
     } else if (courseType === 'academy' && typeof window.kameshkahData !== 'undefined') {
@@ -191,10 +184,14 @@ window.enrollInCourse = function(courseId, courseType) {
     const db = firebase.database();
     const enrollmentRef = db.ref('users/' + user.uid + '/enrolledCourses/' + courseId);
 
+    // التحقق المباشر بدون تعقيد
     enrollmentRef.once('value', (snapshot) => {
         if (snapshot.exists()) {
-            window.location.href = `watch.html?id=${courseId}`;
+            // لو مشترك، نوديه الداشبورد علطول
+            alert("أنت مشترك بالفعل! جاري نقلك لكورساتك...");
+            window.location.href = "dashboard.html";
         } else {
+            // اشتراك جديد
             enrollmentRef.set({
                 id: courseId,
                 type: courseType,
@@ -205,8 +202,12 @@ window.enrollInCourse = function(courseId, courseType) {
                 completedLessons: [],
                 enrolledAt: new Date().toISOString()
             }).then(() => {
-                alert("تم الاشتراك! يلا بينا نبدأ 🚀");
-                window.location.href = `watch.html?id=${courseId}`;
+                // إظهار رسالة نجاح مخصصة (Toast) لو موجودة في الصفحة، أو Alert عادي
+                showSuccessMessage("تم الاشتراك بنجاح! 🎉\nتمت إضافة الكورس للوحة التحكم.");
+                // تأخير بسيط قبل التحويل عشان يلحق يشوف الرسالة
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 2000);
             }).catch((error) => {
                 console.error(error);
                 alert("حصلت مشكلة في الاشتراك، حاول تاني.");
@@ -215,7 +216,22 @@ window.enrollInCourse = function(courseId, courseType) {
     });
 }
 
-// --- وظائف مساعدة (عدادات، حماية، لايت بوكس) ---
+// دالة مساعدة لإظهار رسالة جميلة
+function showSuccessMessage(msg) {
+    // لو مفيش عنصر رسالة، نستخدم alert
+    const toast = document.createElement('div');
+    toast.className = "fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-6 py-3 rounded-full shadow-2xl z-50 flex items-center gap-2 animate-bounce-slow font-bold";
+    toast.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> ${msg.replace('\n', ' ')}`;
+    document.body.appendChild(toast);
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+    
+    // تختفي بعد 3 ثواني
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// ... (باقي الدوال: initCounters, animateValue, initProtection, injectLightboxStyles ...)
 function initCounters() {
     const counters = document.querySelectorAll('.counter-number');
     if(counters.length === 0) return;

@@ -6,12 +6,14 @@
     <link rel="icon" type="image/png" href="images/ui/logo.png">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- تم تحديث رابط المكتبة لنسخة أكثر استقراراً -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
-    <!-- لازم نحمل المخزنين عشان الجوكر يختار منهم -->
     <script src="js/udemy-data.js"></script>
     <script src="js/kameshkah-data.js"></script>
 </head>
@@ -20,13 +22,11 @@
     <div id="header-ph"></div>
 
     <main class="pt-32 px-4 container mx-auto min-h-screen pb-12 fade-in">
-        <!-- زر الرجوع (بيتغير حسب المصدر) -->
         <a id="back-link" href="courses.html" class="inline-flex items-center gap-2 text-slate-600 font-bold mb-6 bg-white/50 px-4 py-2 rounded-lg hover:bg-white transition">
             <i data-lucide="arrow-right"></i> رجوع
         </a>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- العمود الجانبي (الصورة والسعر والزر) -->
             <div class="lg:col-span-1">
                 <div class="glass-panel p-6 rounded-3xl sticky top-24 bg-white/80">
                     <img id="c-img" src="" class="w-full rounded-2xl shadow-md mb-6 object-cover aspect-video">
@@ -36,17 +36,17 @@
                         <span id="c-type" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-500"></span>
                     </div>
 
-                    <a id="c-action-btn" href="#" target="_blank" class="block w-full bg-emerald-600 hover:bg-emerald-700 text-white text-center py-4 rounded-xl font-bold text-lg shadow-xl shadow-emerald-200 transition mb-4 animate-bounce-slow">
-                        اشترك الآن 🚀
+                    <!-- الزرار المحدث -->
+                    <a href="#" id="c-action-btn" class="block w-full bg-emerald-600 hover:bg-emerald-700 text-white text-center py-4 rounded-xl font-bold text-lg shadow-xl shadow-emerald-200 transition mb-4 animate-bounce-slow">
+                        جاري التحميل...
                     </a>
                     
                     <div class="text-center text-xs text-slate-400 font-bold">
-                        <i data-lucide="shield-check" class="w-4 h-4 inline"></i> ضمان استرداد الأموال (حسب المنصة)
+                        <i data-lucide="shield-check" class="w-4 h-4 inline"></i> ضمان جودة المحتوى
                     </div>
                 </div>
             </div>
 
-            <!-- المحتوى الرئيسي (الوصف والتفاصيل) -->
             <div class="lg:col-span-2">
                 <div class="glass-panel p-8 md:p-12 rounded-3xl bg-white/70">
                     <h1 id="c-title" class="text-3xl md:text-5xl font-black text-slate-900 mb-2 leading-tight">...</h1>
@@ -59,7 +59,6 @@
                         <p id="c-desc" class="text-slate-700 leading-loose text-lg"></p>
                     </div>
 
-                    <!-- هنا ممكن نزود محتوى المنهج (Curriculum) لو متاح في الداتا -->
                     <div class="mt-8">
                         <h3 class="font-bold text-slate-900 mb-4 text-xl">ماذا ستتعلم؟</h3>
                         <ul class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -85,6 +84,7 @@
             let course = null;
             const backBtn = document.getElementById('back-link');
 
+            // البحث في يوديمي أو الأكاديمية
             if (type === 'udemy' && typeof window.udemyData !== 'undefined') {
                 course = window.udemyData.find(c => c.id == id);
                 backBtn.href = "courses-udemy.html";
@@ -96,51 +96,37 @@
             }
 
             if (course) {
+                document.title = `${course.titleAr} | التفاصيل`;
                 document.getElementById('c-title').innerText = course.titleAr;
                 document.getElementById('c-subtitle').innerText = course.titleEn;
                 document.getElementById('c-desc').innerText = course.desc;
                 document.getElementById('c-img').src = course.img;
-                document.getElementById('c-price').innerText = course.price || "عرض خاص";
+                document.getElementById('c-price').innerText = course.price || "مجاني";
                 
                 const actionBtn = document.getElementById('c-action-btn');
                 
                 if (type === 'udemy') {
-                    // يوديمي: رابط خارجي
+                    // رابط خارجي
                     actionBtn.href = course.url; 
                     actionBtn.innerText = "اشترك من يوديمي 🛒";
                     actionBtn.classList.add('bg-purple-600', 'hover:bg-purple-700', 'shadow-purple-200');
                     actionBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700', 'shadow-emerald-200');
                 } else {
-                    // أكاديمية: تشغيل دالة الاشتراك والدخول للقاعة
-                    actionBtn.href = "#"; // عشان ميعملش ريلود
+                    // كورس داخلي: تشغيل دالة الاشتراك
+                    actionBtn.href = "#"; 
                     actionBtn.innerText = "اشترك وابدأ التعلم 🎓";
                     actionBtn.onclick = function(e) {
                         e.preventDefault();
                         if (typeof enrollInCourse === 'function') {
-                            enrollInCourse(course.id, 'academy'); // الدالة اللي ضفناها في main.js
+                            // 👇 هنا استدعاء الدالة اللي بتظهر الرسالة وتوديك الداشبورد
+                            enrollInCourse(course.id, 'academy'); 
                         } else {
-                            console.error("enrollInCourse function not found in main.js");
-                            alert("حدث خطأ في الاشتراك، يرجى المحاولة لاحقاً");
+                            alert("حدث خطأ، يرجى المحاولة لاحقاً");
                         }
                     };
                 }
-
-                // إضافة زر الاختبار بشكل اختياري
-                const quizBtnContainer = document.createElement('div');
-                quizBtnContainer.className = "mt-4 text-center"; // تنسيق للمكان
-                quizBtnContainer.innerHTML = `
-                    <a href="quiz.html?courseId=${id}" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-full font-bold hover:bg-blue-700 transition shadow-lg">
-                        انتقل للاختبار (اختياري) 📝
-                    </a>
-                `;
-                // إضافة الزر بعد زر الاشتراك
-                if(actionBtn && actionBtn.parentNode) {
-                    actionBtn.parentNode.insertBefore(quizBtnContainer, actionBtn.nextSibling);
-                }
-
             } else {
-                // ... (عرض الخطأ) ...
-                 document.querySelector('main').innerHTML = `
+                document.querySelector('main').innerHTML = `
                     <div class="text-center py-20">
                         <h1 class="text-4xl font-bold text-slate-300 mb-4">404</h1>
                         <p class="text-xl text-slate-500 mb-8">الكورس ده مش موجود أو الرابط غلط 🤷‍♂️</p>
@@ -149,10 +135,7 @@
                 `;
             }
             
-            // إصلاح الخطأ: التأكد من وجود lucide قبل استخدامه
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         });
     </script>
 </body>
