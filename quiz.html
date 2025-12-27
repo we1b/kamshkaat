@@ -80,7 +80,8 @@
             const courseId = params.get('courseId');
 
             if (!courseId) {
-                // في حالة عدم وجود معرف الكورس، نعرض رسالة واضحة بدلاً من التوجيه التلقائي الذي قد يسبب أخطاء
+                // تم إزالة إعادة التوجيه التلقائي لتجنب الأخطاء
+                // بدلاً من ذلك، نعرض واجهة مستخدم ودية للعودة
                 document.body.innerHTML = `
                     <div class="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-center p-4">
                         <div class="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-slate-200">
