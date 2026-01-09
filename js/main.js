@@ -54,11 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadNavbarFooter();       
     initProtection();         
     
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    } else {
-        setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 1000);
-    }
+    // تشغيل الأيقونات بشكل آمن
+    safeCreateIcons();
 
     initCounters();
     injectLightboxStyles(); 
@@ -67,6 +64,17 @@ document.addEventListener('DOMContentLoaded', () => {
         initGalleryPage();
     }
 });
+
+// دالة مساعدة لتشغيل الأيقونات بأمان
+function safeCreateIcons() {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    } else {
+        setTimeout(() => { 
+            if (typeof lucide !== 'undefined') lucide.createIcons(); 
+        }, 1000);
+    }
+}
 
 function toggleLanguage() {
     currentLang = currentLang === 'ar' ? 'en' : 'ar';
@@ -147,7 +155,7 @@ function loadNavbarFooter() {
     if(document.getElementById('header-ph')) document.getElementById('header-ph').innerHTML = navbarHTML;
     if(document.getElementById('footer-ph')) document.getElementById('footer-ph').innerHTML = footerHTML;
     
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    safeCreateIcons();
 }
 
 window.toggleMobileMenu = function() {
@@ -158,12 +166,13 @@ window.toggleMobileMenu = function() {
 }
 
 // -------------------------------------------------------------------------
-// 5. وظيفة الاشتراك في الكورس (محدثة: رسالة وتوجيه للداشبورد) 🔥
+// 🔥 [تعديل هام] وظيفة الاشتراك في الكورس مع الرسالة 🔥
 // -------------------------------------------------------------------------
 window.enrollInCourse = function(courseId, courseType) {
     const user = firebase.auth().currentUser;
     if (!user) {
-        alert("لازم تسجل دخول الأول يا بطل عشان تقدر تشترك! 🔒");
+        // لو مش مسجل، نظهر رسالة ونوديه لصفحة الدخول
+        alert("🔒 لازم تسجل دخول الأول يا بطل عشان تقدر تشترك!");
         window.location.href = "login.html";
         return;
     }
@@ -181,15 +190,25 @@ window.enrollInCourse = function(courseId, courseType) {
         return; 
     }
 
+    // [تعديل] تغيير نص الزرار لـ "جاري التسجيل..." لو الزرار موجود
+    const btn = document.getElementById('c-action-btn');
+    if(btn) {
+        btn.innerHTML = `<i class="animate-spin" data-lucide="loader-2"></i> جاري التسجيل...`;
+        safeCreateIcons();
+        btn.disabled = true;
+    }
+
     const db = firebase.database();
     const enrollmentRef = db.ref('users/' + user.uid + '/enrolledCourses/' + courseId);
 
-    // التحقق المباشر بدون تعقيد
+    // التحقق المباشر
     enrollmentRef.once('value', (snapshot) => {
         if (snapshot.exists()) {
-            // لو مشترك، نوديه الداشبورد علطول
-            alert("أنت مشترك بالفعل! جاري نقلك لكورساتك...");
-            window.location.href = "dashboard.html";
+            // [تعديل] لو مشترك بالفعل، نعرض رسالة ونوديه الداشبورد
+            showSuccessMessage("أنت مشترك في الكورس ده بالفعل! 🎓\nجاري تحويلك للوحة التحكم...");
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 2000);
         } else {
             // اشتراك جديد
             enrollmentRef.set({
@@ -202,32 +221,38 @@ window.enrollInCourse = function(courseId, courseType) {
                 completedLessons: [],
                 enrolledAt: new Date().toISOString()
             }).then(() => {
-                // إظهار رسالة نجاح مخصصة (Toast) لو موجودة في الصفحة، أو Alert عادي
-                showSuccessMessage("تم الاشتراك بنجاح! 🎉\nتمت إضافة الكورس للوحة التحكم.");
-                // تأخير بسيط قبل التحويل عشان يلحق يشوف الرسالة
+                // [تعديل] إظهار رسالة نجاح مخصصة (Toast)
+                showSuccessMessage("تم الاشتراك بنجاح! 🎉\nجاري إضافته للوحة التحكم...");
+                // تأخير بسيط قبل التحويل
                 setTimeout(() => {
                     window.location.href = "dashboard.html";
                 }, 2000);
             }).catch((error) => {
                 console.error(error);
                 alert("حصلت مشكلة في الاشتراك، حاول تاني.");
+                if(btn) {
+                    btn.innerText = "اشترك وابدأ التعلم";
+                    btn.disabled = false;
+                }
             });
         }
     });
 }
 
-// دالة مساعدة لإظهار رسالة جميلة
+// [تعديل] دالة مساعدة لإظهار رسالة جميلة (Toast)
 function showSuccessMessage(msg) {
-    // لو مفيش عنصر رسالة، نستخدم alert
     const toast = document.createElement('div');
-    toast.className = "fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-6 py-3 rounded-full shadow-2xl z-50 flex items-center gap-2 animate-bounce-slow font-bold";
-    toast.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> ${msg.replace('\n', ' ')}`;
+    toast.className = "fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-8 py-4 rounded-full shadow-2xl z-[100] flex items-center gap-3 animate-bounce-slow font-bold border-2 border-white/20";
+    toast.innerHTML = `<i data-lucide="check-circle" class="w-6 h-6"></i> <span>${msg.replace('\n', '<br>')}</span>`;
     document.body.appendChild(toast);
-    if(typeof lucide !== 'undefined') lucide.createIcons();
+    
+    safeCreateIcons();
     
     // تختفي بعد 3 ثواني
     setTimeout(() => {
-        toast.remove();
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.5s';
+        setTimeout(() => toast.remove(), 500);
     }, 3000);
 }
 
