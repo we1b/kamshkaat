@@ -16,18 +16,36 @@
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
     <script src="js/dashboard.js"></script>
+
+    <!-- ستايلات خاصة بتحدي رمضان -->
+    <style>
+        .custom-checkbox { appearance: none; -webkit-appearance: none; background-color: #fff; margin: 0; width: 1.5em; height: 1.5em; border: 2px solid #D1D5DB; border-radius: 0.5em; display: grid; place-content: center; cursor: pointer; transition: all 0.2s ease-in-out; }
+        .custom-checkbox::before { content: ""; width: 0.8em; height: 0.8em; transform: scale(0); transition: 120ms transform ease-in-out; box-shadow: inset 1em 1em white; transform-origin: center; clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
+        .custom-checkbox:checked { background-color: #047857; border-color: #047857; }
+        .custom-checkbox:checked::before { transform: scale(1); }
+        
+        .quran-card { background: linear-gradient(135deg, #047857 0%, #064E3B 100%); color: white; position: relative; overflow: hidden; }
+        .quran-card::after { content: ''; position: absolute; top: -20px; left: -20px; width: 100px; height: 100px; background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 0l2.5 7.5L20 10l-7.5 2.5L10 20l-2.5-7.5L0 10l7.5-2.5z' fill='%23D4AF37' fill-opacity='0.1'/%3E%3C/svg%3E"); opacity: 0.3; }
+        
+        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #047857; }
+        input:checked + .slider:before { transform: translateX(20px); }
+    </style>
 </head>
 <body data-page="dashboard">
     <div class="fixed-bg"><img src="images/ui/bg.jpg"></div>
     <div id="header-ph"></div>
 
     <main class="pt-32 px-4 container mx-auto min-h-screen pb-12 fade-in">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             
             <!-- القائمة الجانبية -->
             <div class="lg:col-span-1 space-y-6">
                 <!-- كارت البروفايل -->
-                <div class="glass-panel p-6 rounded-3xl text-center relative overflow-hidden">
+                <div class="glass-panel p-6 rounded-3xl text-center relative overflow-hidden bg-white/80 backdrop-blur-md">
                     <div class="relative w-24 h-24 mx-auto mb-3 group">
                         <img id="user-avatar" src="images/ui/logo.png" class="w-full h-full rounded-full object-cover border-4 border-white/50 shadow-md transition duration-300">
                         <label for="avatar-upload" class="absolute bottom-0 right-0 bg-emerald-500 hover:bg-emerald-600 text-white p-2 rounded-full border-2 border-white cursor-pointer shadow-sm z-10 transition transform hover:scale-110" title="تغيير الصورة">
@@ -42,21 +60,15 @@
                         <button onclick="showSection('dashboard')" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-200 transition mb-4">
                             <i data-lucide="layout-grid" class="w-5 h-5"></i> لوحتي
                         </button>
-                        <!-- زرار جديد لتحدي رمضان -->
-                        <button onclick="showSection('ramadan')" class="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-purple-50 text-purple-700 font-bold transition text-sm group border border-purple-100 mb-2">
-                            <span class="flex items-center gap-2"><i data-lucide="moon" class="w-4 h-4 group-hover:text-purple-600"></i> تحدي رمضان</span>
-                            <i data-lucide="chevron-left" class="w-4 h-4 text-purple-300"></i>
+                        <button onclick="showSection('ramadan')" class="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-emerald-50 text-emerald-800 font-bold transition text-sm group border border-emerald-100 mb-2">
+                            <span class="flex items-center gap-2"><i data-lucide="moon" class="w-4 h-4 group-hover:text-emerald-600"></i> تحدي رمضان</span>
+                            <i data-lucide="chevron-left" class="w-4 h-4 text-emerald-300"></i>
                         </button>
                         <button onclick="showSection('settings')" class="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-slate-50 text-slate-600 font-bold transition text-sm group">
                             <span class="flex items-center gap-2"><i data-lucide="user-cog" class="w-4 h-4 text-slate-400 group-hover:text-emerald-600"></i> إعدادات الحساب</span>
                             <i data-lucide="chevron-left" class="w-4 h-4 text-slate-300"></i>
                         </button>
-                        <button onclick="showSection('certificates')" class="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-slate-50 text-slate-600 font-bold transition text-sm group">
-                            <span class="flex items-center gap-2"><i data-lucide="award" class="w-4 h-4 text-slate-400 group-hover:text-yellow-500"></i> الشهادات</span>
-                            <i data-lucide="chevron-left" class="w-4 h-4 text-slate-300"></i>
-                        </button>
-                        <div class="h-px bg-slate-100 my-2"></div>
-                        <button onclick="firebase.auth().signOut().then(() => window.location.href='index.html')" class="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-red-500 hover:bg-red-50 font-bold transition text-sm">
+                        <button onclick="firebase.auth().signOut().then(() => window.location.href='index.html')" class="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-red-500 hover:bg-red-50 font-bold transition text-sm mt-4">
                             <i data-lucide="log-out" class="w-4 h-4"></i> خروج
                         </button>
                     </nav>
@@ -64,17 +76,17 @@
             </div>
 
             <!-- المحتوى -->
-            <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-3 space-y-6">
                 
-                <!-- 1. قسم لوحتي (الرئيسي) -->
+                <!-- 1. قسم لوحتي -->
                 <div id="section-dashboard" class="content-section space-y-6">
-                    <!-- ملخص سريع لرمضان -->
-                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-3xl shadow-lg relative overflow-hidden group cursor-pointer" onclick="showSection('ramadan')">
-                        <div class="absolute top-0 right-0 p-4 opacity-10"><i data-lucide="moon" class="w-32 h-32"></i></div>
+                    <!-- بانر رمضان -->
+                    <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-6 rounded-3xl shadow-lg relative overflow-hidden group cursor-pointer" onclick="showSection('ramadan')">
+                        <div class="absolute top-0 left-0 p-4 opacity-10"><i data-lucide="moon" class="w-32 h-32"></i></div>
                         <div class="relative z-10 flex justify-between items-center">
                             <div>
-                                <h3 class="text-xl font-black mb-1">تحدي رمضان 🌙</h3>
-                                <p class="text-purple-100 text-sm font-bold">اضغط لمتابعة وردك اليومي</p>
+                                <h3 class="text-xl font-black mb-1">تزكية النفس في رمضان 🌙</h3>
+                                <p class="text-emerald-100 text-sm font-bold">اضغط هنا لمتابعة وردك اليومي (قرآن، صلاة، أذكار)</p>
                             </div>
                             <div class="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
                                 <i data-lucide="arrow-left" class="w-6 h-6"></i>
@@ -88,103 +100,109 @@
                             <i data-lucide="play-circle" class="text-emerald-600"></i> كورساتي الحالية
                         </h3>
                         <div id="my-courses-list" class="space-y-4">
-                            <div class="text-center py-8">
-                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-2"></div>
-                                <p class="text-slate-400 text-xs font-bold">بنحمل بياناتك...</p>
-                            </div>
+                            <!-- الكورسات بتتحمل هنا -->
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. قسم تحدي رمضان (الجديد) -->
+                <!-- 2. قسم تحدي رمضان (التصميم الجديد) -->
                 <div id="section-ramadan" class="content-section hidden space-y-6">
-                    <div class="bg-white p-6 rounded-3xl border border-purple-100 shadow-sm">
-                        <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
-                            <h2 class="text-2xl font-black text-purple-900 flex items-center gap-2">
-                                <i data-lucide="moon" class="text-purple-600"></i> متابعة رمضان
-                            </h2>
-                            <span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full" id="today-date">اليوم: ...</span>
+                    <!-- ملخص الإنجاز -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-end mb-2">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-700">إنجاز اليوم <span id="current-ramadan-date" class="text-sm font-normal text-gray-400 mr-2">...</span></h3>
+                                <p class="text-sm text-gray-500" id="progress-text">شد حيلك يا بطل 💪</p>
+                            </div>
+                            <span class="text-3xl font-bold text-[#047857]" id="progress-percent">0%</span>
                         </div>
-
-                        <!-- اختيار اليوم -->
-                        <div class="flex gap-2 overflow-x-auto pb-4 mb-4" id="ramadan-days-scroller">
-                            <!-- الأيام هتتولد هنا بالجافاسكريبت -->
+                        <div class="w-full bg-gray-100 rounded-full h-3">
+                            <div class="bg-[#047857] h-3 rounded-full transition-all duration-700 ease-out" id="progress-bar" style="width: 0%"></div>
                         </div>
+                        
+                        <!-- شريط الأيام -->
+                        <div class="flex gap-2 overflow-x-auto pb-2 mt-6" id="ramadan-days-scroller">
+                            <!-- الأيام هتتولد هنا -->
+                        </div>
+                    </div>
 
-                        <!-- نموذج الإدخال لليوم المحدد -->
-                        <div id="day-tracker-form" class="space-y-4">
-                            <div class="bg-purple-50 p-4 rounded-xl border border-purple-100">
-                                <h3 class="font-bold text-purple-900 mb-3" id="selected-day-title">إنجازات اليوم</h3>
-                                
-                                <!-- ورد القرآن -->
-                                <div class="mb-4">
-                                    <label class="block text-xs font-bold text-slate-600 mb-2">📖 ورد القرآن (كم صفحة/جزء؟)</label>
-                                    <input type="text" id="quran-input" class="w-full bg-white border border-purple-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-purple-500" placeholder="مثال: الجزء الأول كاملاً">
+                    <!-- الأساسيات -->
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-1 h-6 bg-[#047857] rounded-full"></div>
+                        <h3 class="text-xl font-bold text-gray-800">الأساسيات (الثوابت) 🕌</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- الصلوات -->
+                        <div id="prayers-container" class="contents"></div>
+                        
+                        <!-- ورد القرآن -->
+                        <div class="stat-card quran-card p-5 rounded-xl shadow-sm flex flex-col justify-between relative group cursor-pointer" onclick="toggleQuran()">
+                            <div class="relative z-10">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-bold text-lg text-white">ورد القرآن</h4>
+                                        <p class="text-emerald-100 text-sm mt-1" id="quran-status-text">اضغط لتسجيل الورد 📖</p>
+                                    </div>
+                                    <div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                                        <i data-lucide="book-open" class="text-white"></i>
+                                    </div>
                                 </div>
-
-                                <!-- Checkboxes -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <label class="flex items-center gap-3 bg-white p-3 rounded-lg border border-purple-100 cursor-pointer hover:border-purple-300 transition">
-                                        <input type="checkbox" id="azkar-check" class="w-5 h-5 accent-purple-600">
-                                        <span class="text-sm font-bold text-slate-700">أذكار الصباح والمساء 📿</span>
-                                    </label>
-                                    
-                                    <label class="flex items-center gap-3 bg-white p-3 rounded-lg border border-purple-100 cursor-pointer hover:border-purple-300 transition">
-                                        <input type="checkbox" id="tarawih-check" class="w-5 h-5 accent-purple-600">
-                                        <span class="text-sm font-bold text-slate-700">صلاة التراويح 🕌</span>
-                                    </label>
-                                    
-                                    <label class="flex items-center gap-3 bg-white p-3 rounded-lg border border-purple-100 cursor-pointer hover:border-purple-300 transition">
-                                        <input type="checkbox" id="tahajjud-check" class="w-5 h-5 accent-purple-600">
-                                        <span class="text-sm font-bold text-slate-700">صلاة التهجد 🌌</span>
-                                    </label>
-
-                                    <label class="flex items-center gap-3 bg-white p-3 rounded-lg border border-purple-100 cursor-pointer hover:border-purple-300 transition">
-                                        <input type="checkbox" id="sunan-check" class="w-5 h-5 accent-purple-600">
-                                        <span class="text-sm font-bold text-slate-700">السنن الرواتب (12 ركعة) ☀️</span>
-                                    </label>
+                            </div>
+                            <div class="mt-4 flex items-center gap-3 relative z-10">
+                                <div id="quran-check-circle" class="w-8 h-8 rounded-full border-2 border-white/50 flex items-center justify-center transition-all">
+                                    <i data-lucide="check" class="w-5 h-5 text-white opacity-0 transition-opacity"></i>
                                 </div>
-
-                                <button onclick="saveRamadanDay()" class="mt-6 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-purple-200">
-                                    حفظ إنجاز اليوم ✨
-                                </button>
+                                <span class="text-sm font-semibold text-white" id="quran-action-text">لم يتم بعد</span>
                             </div>
                         </div>
                     </div>
+
+                    <!-- النوافل -->
+                    <div class="flex justify-between items-center mb-2 mt-8">
+                        <div class="flex items-center gap-2">
+                            <div class="w-1 h-6 bg-[#D4AF37] rounded-full"></div>
+                            <h3 class="text-xl font-bold text-gray-800">النوافل (زيادة خير) 🌱</h3>
+                        </div>
+                        <button onclick="toggleSettingsModal()" class="text-sm text-[#047857] hover:bg-[#ECFDF5] px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> تعديل
+                        </button>
+                    </div>
+
+                    <div id="flexible-habits-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                    <div id="empty-habits-msg" class="hidden text-center p-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                        <p class="text-gray-500">مش مفعل أي سنن.. ركز في الأساسي وممتاز عليك! 👌</p>
+                    </div>
                 </div>
 
-                <!-- 3. قسم الإعدادات (موجود) -->
+                <!-- 3. قسم الإعدادات -->
                 <div id="section-settings" class="content-section hidden">
                     <div class="glass-panel p-8 rounded-3xl">
                         <h2 class="text-xl font-black text-emerald-900 mb-6">تعديل البيانات</h2>
                         <form id="profile-form" class="space-y-4">
-                            <div><label class="block text-slate-700 font-bold mb-2 text-sm">الاسم</label><input type="text" id="edit-name" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 font-medium text-sm"></div>
-                            <div><label class="block text-slate-700 font-bold mb-2 text-sm">رقم الهاتف</label><input type="tel" id="edit-phone" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 font-medium text-sm"></div>
-                            <button type="submit" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg w-full text-sm">حفظ التغييرات</button>
+                            <div><label class="block text-slate-700 font-bold mb-2 text-sm">الاسم</label><input type="text" id="edit-name" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 outline-none"></div>
+                            <button type="submit" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold w-full text-sm">حفظ التغييرات</button>
                         </form>
-                    </div>
-                </div>
-
-                <!-- 4. قسم الشهادات (موجود) -->
-                <div id="section-certificates" class="content-section hidden">
-                    <div class="glass-panel p-12 rounded-3xl text-center border-2 border-dashed border-slate-200">
-                        <div class="bg-yellow-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="award" class="w-10 h-10 text-yellow-500"></i></div>
-                        <h2 class="text-xl font-black text-slate-800 mb-2">لسه مفيش شهادات</h2>
-                        <p class="text-slate-500 text-sm font-medium">كمل الكورسات للاخر عشان شهادتك تظهر هنا.</p>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <div id="footer-ph"></div>
+    <!-- نافذة إعدادات النوافل -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md mx-4 shadow-2xl overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-[#ECFDF5]">
+                <h3 class="font-bold text-[#047857] text-lg">اختر النوافل 🛠️</h3>
+                <button onclick="toggleSettingsModal()" class="text-gray-500 hover:text-red-500"><i data-lucide="x"></i></button>
+            </div>
+            <div class="p-6 max-h-[60vh] overflow-y-auto" id="settings-list"></div>
+            <div class="p-5 border-t border-gray-100 flex justify-end bg-gray-50">
+                <button onclick="toggleSettingsModal()" class="bg-[#047857] text-white px-6 py-2 rounded-xl font-bold">تم</button>
+            </div>
+        </div>
+    </div>
 
-    <script>
-        function showSection(sectionId) {
-            document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
-            document.getElementById('section-' + sectionId).classList.remove('hidden');
-            lucide.createIcons();
-        }
-    </script>
+    <div id="footer-ph"></div>
 </body>
 </html>
