@@ -89,6 +89,24 @@ function updateDashboardUI(data, user) {
     loadEnrolledCourses(data.enrolledCourses);
 }
 
+// دالة لحذف كورس (إلغاء الاشتراك)
+window.unsubscribeCourse = function(courseId) {
+    if (!currentFirebaseUser) return;
+    
+    if (confirm("هل أنت متأكد أنك تريد إلغاء الاشتراك في هذا الكورس؟ 😢")) {
+        const db = firebase.database();
+        db.ref('users/' + currentFirebaseUser.uid + '/enrolledCourses/' + courseId).remove()
+        .then(() => {
+            alert("تم حذف الكورس من لوحة التحكم بنجاح.");
+            // التحديث هيحصل تلقائي لأننا مستخدمين .on('value') في fetchUserData
+        })
+        .catch((error) => {
+            console.error("Error removing course: ", error);
+            alert("حدث خطأ أثناء حذف الكورس.");
+        });
+    }
+}
+
 function loadEnrolledCourses(enrolledCoursesData) {
     const list = document.getElementById('my-courses-list');
     if(!list) return;
@@ -105,14 +123,22 @@ function loadEnrolledCourses(enrolledCoursesData) {
         const isCompleted = c.status === 'completed';
         const progress = isCompleted ? 100 : (c.progress || 0);
         return `
-        <div class="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col md:flex-row gap-6 shadow-sm">
+        <div class="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col md:flex-row gap-6 shadow-sm relative group">
+            <!-- زر حذف الكورس -->
+            <button onclick="unsubscribeCourse('${c.id}')" class="absolute top-2 left-2 text-red-400 hover:text-red-600 hover:bg-red-50 p-1 rounded-full transition opacity-0 group-hover:opacity-100" title="إلغاء الاشتراك">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+
             <div class="w-full md:w-32 h-20 rounded-xl overflow-hidden relative shrink-0">
                 <img src="${c.img}" class="w-full h-full object-cover">
             </div>
             <div class="flex-1 flex flex-col justify-center">
                 <h3 class="font-bold text-slate-800">${c.title}</h3>
                 <div class="w-full bg-slate-100 rounded-full h-2 my-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: ${progress}%"></div></div>
-                <a href="watch.html?id=${c.id}" class="text-xs font-bold text-emerald-600 hover:underline">استكمال المشاهدة</a>
+                <div class="flex justify-between items-center">
+                    <a href="watch.html?id=${c.id}" class="text-xs font-bold text-emerald-600 hover:underline">استكمال المشاهدة</a>
+                    <span class="text-xs text-slate-400">${progress}% مكتمل</span>
+                </div>
             </div>
         </div>`;
     }).join('');

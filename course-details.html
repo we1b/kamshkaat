@@ -6,14 +6,11 @@
     <link rel="icon" type="image/png" href="images/ui/logo.png">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
+    <!-- لازم نحمل المخزنين عشان الجوكر يختار منهم -->
     <script src="js/udemy-data.js"></script>
     <script src="js/kameshkah-data.js"></script>
 </head>
@@ -22,11 +19,13 @@
     <div id="header-ph"></div>
 
     <main class="pt-32 px-4 container mx-auto min-h-screen pb-12 fade-in">
+        <!-- زر الرجوع (بيتغير حسب المصدر) -->
         <a id="back-link" href="courses.html" class="inline-flex items-center gap-2 text-slate-600 font-bold mb-6 bg-white/50 px-4 py-2 rounded-lg hover:bg-white transition">
             <i data-lucide="arrow-right"></i> رجوع
         </a>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- العمود الجانبي (الصورة والسعر والزر) -->
             <div class="lg:col-span-1">
                 <div class="glass-panel p-6 rounded-3xl sticky top-24 bg-white/80">
                     <img id="c-img" src="" class="w-full rounded-2xl shadow-md mb-6 object-cover aspect-video">
@@ -47,6 +46,7 @@
                 </div>
             </div>
 
+            <!-- المحتوى الرئيسي (الوصف والتفاصيل) -->
             <div class="lg:col-span-2">
                 <div class="glass-panel p-8 md:p-12 rounded-3xl bg-white/70">
                     <h1 id="c-title" class="text-3xl md:text-5xl font-black text-slate-900 mb-2 leading-tight">...</h1>
