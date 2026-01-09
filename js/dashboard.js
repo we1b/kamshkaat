@@ -5,23 +5,32 @@ let currentUserData = null;
 let currentFirebaseUser = null;
 let selectedRamadanDay = 1;
 
-// حالة التحدي (الافتراضية)
-let prayers = [
-    { id: 'fajr', name: 'الفجر', checked: false, time: '04:50 ص' },
-    { id: 'dhuhr', name: 'الظهر', checked: false, time: '12:05 م' },
-    { id: 'asr', name: 'العصر', checked: false, time: '03:15 م' },
-    { id: 'maghrib', name: 'المغرب', checked: false, time: '05:45 م' },
-    { id: 'isha', name: 'العشاء', checked: false, time: '07:15 م' }
+// القوالب الثابتة (للاستخدام في العرض فقط)
+const PRAYERS_TEMPLATE = [
+    { id: 'fajr', name: 'الفجر', time: '04:50 ص' },
+    { id: 'dhuhr', name: 'الظهر', time: '12:05 م' },
+    { id: 'asr', name: 'العصر', time: '03:15 م' },
+    { id: 'maghrib', name: 'المغرب', time: '05:45 م' },
+    { id: 'isha', name: 'العشاء', time: '07:15 م' }
 ];
-let quranWird = { checked: false };
-let flexibleHabits = [
-    { id: 'sunan_rawatib', name: 'السنن الرواتب', icon: 'layers', active: true, checked: false },
-    { id: 'duha', name: 'صلاة الضحى', icon: 'sun', active: true, checked: false },
-    { id: 'witr', name: 'الوتر', icon: 'moon', active: false, checked: false },
-    { id: 'morning_adhkar', name: 'أذكار الصباح', icon: 'sunrise', active: true, checked: false },
-    { id: 'evening_adhkar', name: 'أذكار المساء', icon: 'sunset', active: true, checked: false },
-    { id: 'tarawih', name: 'التراويح', icon: 'star', active: true, checked: false }
+
+const HABITS_TEMPLATE = [
+    { id: 'sunan_rawatib', name: 'السنن الرواتب', icon: 'layers' },
+    { id: 'duha', name: 'صلاة الضحى', icon: 'sun' },
+    { id: 'witr', name: 'الوتر', icon: 'moon' },
+    { id: 'morning_adhkar', name: 'أذكار الصباح', icon: 'sunrise' },
+    { id: 'evening_adhkar', name: 'أذكار المساء', icon: 'sunset' },
+    { id: 'tarawih', name: 'التراويح', icon: 'star' }
 ];
+
+// الحالة الحالية (State) - سيتم تحديثها عند تغيير اليوم
+let currentDayData = {
+    prayers: {}, // { fajr: true, dhuhr: false ... }
+    habits: {},  // { sunan: true ... }
+    quran: false
+};
+
+let userSettings = {}; // الإعدادات العامة (ايه اللي مفعل وايه اللي لا)
 
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -30,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             currentFirebaseUser = user;
             fetchUserData(user);
-            initRamadanDays(); // توليد أيام الشهر
+            initRamadanApp(user); // تهيئة التطبيق
         } else {
             window.location.href = 'login.html';
         }
@@ -51,7 +60,10 @@ window.showSection = function(sectionId) {
     const target = document.getElementById('section-' + sectionId);
     if (target) {
         target.classList.remove('hidden');
-        if (sectionId === 'ramadan') loadRamadanDayData(selectedRamadanDay); // تحميل بيانات اليوم
+        if (sectionId === 'ramadan') {
+            // عند فتح قسم رمضان، نتأكد من تحميل بيانات اليوم الحالي
+            loadRamadanDayData(selectedRamadanDay);
+        }
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 }
@@ -107,70 +119,105 @@ function loadEnrolledCourses(enrolledCoursesData) {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-// --- 🌙 منطق تحدي رمضان 🌙 ---
+// --- 🌙 منطق تحدي رمضان المحدث 🌙 ---
+
+function initRamadanApp(user) {
+    initRamadanDays();
+    // تحميل الإعدادات العامة مرة واحدة (ايه النوافل المفعلة)
+    const db = firebase.database();
+    db.ref(`users/${user.uid}/ramadanSettings`).on('value', (snapshot) => {
+        userSettings = snapshot.val() || {};
+        // لو الإعدادات فاضية، نفعل كله افتراضياً
+        if (Object.keys(userSettings).length === 0) {
+            HABITS_TEMPLATE.forEach(h => userSettings[h.id] = true);
+        }
+        // بعد تحميل الإعدادات، نحمل بيانات اليوم
+        loadRamadanDayData(selectedRamadanDay);
+    });
+}
 
 function initRamadanDays() {
     const container = document.getElementById('ramadan-days-scroller');
     if (!container) return;
     container.innerHTML = '';
     
+    // تحديد اليوم الحالي (مثال: لو احنا في رمضان نجيب التاريخ، حالياً هنفترض 1)
+    // const today = new Date().getDate(); // للتطوير لاحقاً
+    
     for (let i = 1; i <= 30; i++) {
         const btn = document.createElement('button');
-        btn.className = `shrink-0 w-10 h-10 rounded-full font-bold text-sm border flex items-center justify-center transition 
+        btn.className = `shrink-0 w-10 h-10 rounded-full font-bold text-sm border flex items-center justify-center transition day-btn 
             ${i === selectedRamadanDay ? 'bg-[#047857] text-white border-[#047857]' : 'bg-white text-gray-500 border-gray-200'}`;
         btn.innerText = i;
-        btn.onclick = () => { selectedRamadanDay = i; initRamadanDays(); loadRamadanDayData(i); };
+        btn.dataset.day = i;
+        btn.onclick = () => { changeDay(i); };
         container.appendChild(btn);
     }
     document.getElementById('current-ramadan-date').innerText = `(رمضان ${selectedRamadanDay})`;
 }
 
-// تحميل بيانات اليوم من فايربيس
+function changeDay(day) {
+    selectedRamadanDay = day;
+    
+    // تحديث شكل الأزرار
+    document.querySelectorAll('.day-btn').forEach(btn => {
+        if(parseInt(btn.innerText) === day) {
+            btn.className = "shrink-0 w-10 h-10 rounded-full font-bold text-sm border flex items-center justify-center transition day-btn bg-[#047857] text-white border-[#047857] transform scale-110 shadow-md";
+        } else {
+            btn.className = "shrink-0 w-10 h-10 rounded-full font-bold text-sm border flex items-center justify-center transition day-btn bg-white text-gray-500 border-gray-200 hover:border-purple-300";
+        }
+    });
+
+    document.getElementById('current-ramadan-date').innerText = `(رمضان ${day})`;
+    
+    // تحميل بيانات اليوم الجديد من الداتابيز
+    loadRamadanDayData(day);
+}
+
+// تحميل بيانات اليوم المحدد
 function loadRamadanDayData(day) {
     if (!currentFirebaseUser) return;
     const db = firebase.database();
     
-    // 1. جلب إعدادات العادات (Active Habits)
-    db.ref(`users/${currentFirebaseUser.uid}/ramadanSettings`).once('value', (snapSettings) => {
-        const settings = snapSettings.val();
-        if (settings) {
-            flexibleHabits.forEach(h => {
-                if (settings[h.id] !== undefined) h.active = settings[h.id];
-            });
-        }
+    db.ref(`users/${currentFirebaseUser.uid}/ramadanData/day${day}`).once('value', (snapshot) => {
+        const data = snapshot.val() || {};
+        
+        // تحديث الحالة المحلية بالبيانات اللي جاية من السيرفر
+        currentDayData = {
+            prayers: data.prayers || {},
+            habits: data.habits || {},
+            quran: !!data.quran
+        };
 
-        // 2. جلب إنجازات اليوم (Checked Items)
-        db.ref(`users/${currentFirebaseUser.uid}/ramadanData/day${day}`).once('value', (snapData) => {
-            const data = snapData.val() || {};
-            
-            // تحديث الحالة المحلية
-            prayers.forEach(p => p.checked = !!data[p.id]);
-            quranWird.checked = !!data.quran;
-            flexibleHabits.forEach(h => h.checked = !!data[h.id]);
-            
-            // رسم الواجهة
-            renderRamadanUI();
-        });
+        // إعادة رسم الواجهة
+        renderRamadanUI();
+        
+        // التحقق من التقرير الأسبوعي (لو اليوم 7، 14، 21، 28)
+        if (day % 7 === 0) {
+            checkWeeklyReport(day);
+        }
     });
 }
 
 function renderRamadanUI() {
     // 1. الصلوات
     const prayersCont = document.getElementById('prayers-container');
-    prayersCont.innerHTML = prayers.map((p, idx) => `
-        <div class="stat-card p-4 flex items-center justify-between cursor-pointer ${p.checked ? 'bg-green-50 border-green-200' : ''}" onclick="togglePrayer(${idx})">
+    prayersCont.innerHTML = PRAYERS_TEMPLATE.map((p) => {
+        const isChecked = !!currentDayData.prayers[p.id];
+        return `
+        <div class="stat-card p-4 flex items-center justify-between cursor-pointer ${isChecked ? 'bg-green-50 border-green-200' : ''}" onclick="togglePrayer('${p.id}')">
             <div class="flex items-center gap-3">
-                <div class="custom-checkbox ${p.checked ? 'bg-[#047857] border-[#047857]' : ''}">${p.checked ? '✔' : ''}</div>
+                <div class="custom-checkbox ${isChecked ? 'bg-[#047857] border-[#047857]' : ''}">${isChecked ? '✔' : ''}</div>
                 <div><h4 class="font-bold text-gray-800">${p.name}</h4><span class="text-xs text-gray-400">${p.time}</span></div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 
     // 2. القرآن
     const quranCircle = document.getElementById('quran-check-circle');
     const quranStatus = document.getElementById('quran-status-text');
     const quranAction = document.getElementById('quran-action-text');
-    if (quranWird.checked) {
+    if (currentDayData.quran) {
         quranCircle.innerHTML = '<i data-lucide="check" class="w-5 h-5 text-[#047857]"></i>';
         quranCircle.className = "w-8 h-8 rounded-full bg-white flex items-center justify-center";
         quranStatus.innerText = "زادك الله نوراً ✨";
@@ -182,9 +229,9 @@ function renderRamadanUI() {
         quranAction.innerText = "لم يتم بعد";
     }
 
-    // 3. النوافل
+    // 3. النوافل (فقط المفعلة في الإعدادات)
     const habitsCont = document.getElementById('flexible-habits-container');
-    const activeHabits = flexibleHabits.filter(h => h.active);
+    const activeHabits = HABITS_TEMPLATE.filter(h => userSettings[h.id] !== false); // الافتراضي مفعل
     
     if (activeHabits.length === 0) {
         document.getElementById('empty-habits-msg').classList.remove('hidden');
@@ -192,11 +239,10 @@ function renderRamadanUI() {
     } else {
         document.getElementById('empty-habits-msg').classList.add('hidden');
         habitsCont.innerHTML = activeHabits.map(h => {
-            // نجد الاندكس الاصلي
-            const originalIdx = flexibleHabits.findIndex(x => x.id === h.id);
+            const isChecked = !!currentDayData.habits[h.id];
             return `
-            <div class="stat-card p-4 flex items-center gap-3 cursor-pointer ${h.checked ? 'bg-yellow-50 border-yellow-200' : ''}" onclick="toggleHabit(${originalIdx})">
-                <div class="custom-checkbox ${h.checked ? 'bg-[#047857] border-[#047857]' : ''}">${h.checked ? '✔' : ''}</div>
+            <div class="stat-card p-4 flex items-center gap-3 cursor-pointer ${isChecked ? 'bg-yellow-50 border-yellow-200' : ''}" onclick="toggleHabit('${h.id}')">
+                <div class="custom-checkbox ${isChecked ? 'bg-[#047857] border-[#047857]' : ''}">${isChecked ? '✔' : ''}</div>
                 <div><h4 class="font-bold text-gray-800">${h.name}</h4><span class="text-xs text-gray-400">سُنة</span></div>
             </div>`;
         }).join('');
@@ -207,32 +253,104 @@ function renderRamadanUI() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-// --- دوال التفاعل والحفظ الفوري ---
-window.togglePrayer = function(index) {
-    prayers[index].checked = !prayers[index].checked;
-    saveToFirebase(prayers[index].id, prayers[index].checked);
+// --- دوال التفاعل والحفظ ---
+
+window.togglePrayer = function(prayerId) {
+    // عكس الحالة
+    currentDayData.prayers[prayerId] = !currentDayData.prayers[prayerId];
+    // حفظ في اليوم المحدد فقط
+    saveToFirebase(`prayers/${prayerId}`, currentDayData.prayers[prayerId]);
     renderRamadanUI();
 }
 
-window.toggleHabit = function(index) {
-    flexibleHabits[index].checked = !flexibleHabits[index].checked;
-    saveToFirebase(flexibleHabits[index].id, flexibleHabits[index].checked);
+window.toggleHabit = function(habitId) {
+    currentDayData.habits[habitId] = !currentDayData.habits[habitId];
+    saveToFirebase(`habits/${habitId}`, currentDayData.habits[habitId]);
     renderRamadanUI();
 }
 
 window.toggleQuran = function() {
-    quranWird.checked = !quranWird.checked;
-    saveToFirebase('quran', quranWird.checked);
+    currentDayData.quran = !currentDayData.quran;
+    saveToFirebase('quran', currentDayData.quran);
     renderRamadanUI();
 }
 
-function saveToFirebase(key, value) {
+function saveToFirebase(path, value) {
     if (!currentFirebaseUser) return;
     const db = firebase.database();
-    db.ref(`users/${currentFirebaseUser.uid}/ramadanData/day${selectedRamadanDay}/${key}`).set(value);
+    // الحفظ في مسار اليوم المحدد (day1, day2, etc.)
+    db.ref(`users/${currentFirebaseUser.uid}/ramadanData/day${selectedRamadanDay}/${path}`).set(value);
+    
+    // عرض تقرير يومي لو خلص كل حاجة
+    checkDailyCompletion();
 }
 
-// --- إعدادات النوافل (تفعيل/تعطيل العادة نفسها) ---
+// --- التقارير (يومي وأسبوعي) ---
+
+function calculateProgress() {
+    const activeHabitsList = HABITS_TEMPLATE.filter(h => userSettings[h.id] !== false);
+    const totalTasks = PRAYERS_TEMPLATE.length + 1 + activeHabitsList.length;
+    
+    let completedCount = 0;
+    // عد الصلوات
+    PRAYERS_TEMPLATE.forEach(p => { if(currentDayData.prayers[p.id]) completedCount++; });
+    // عد القرآن
+    if(currentDayData.quran) completedCount++;
+    // عد النوافل
+    activeHabitsList.forEach(h => { if(currentDayData.habits[h.id]) completedCount++; });
+    
+    const percent = Math.round((completedCount / totalTasks) * 100);
+
+    document.getElementById('progress-bar').style.width = `${percent}%`;
+    document.getElementById('progress-percent').innerText = `${percent}%`;
+    
+    const textEl = document.getElementById('progress-text');
+    if (percent === 100) {
+        textEl.innerText = "ما شاء الله! يومك كامل 🌟";
+        textEl.classList.add('text-[#047857]', 'font-bold');
+    } else {
+        textEl.innerText = `فاضلك ${totalTasks - completedCount} خطوات 💪`;
+        textEl.classList.remove('text-[#047857]', 'font-bold');
+    }
+
+    return percent; // بنرجع النسبة عشان نستخدمها في التقرير
+}
+
+function checkDailyCompletion() {
+    const percent = calculateProgress();
+    if (percent === 100) {
+        // ممكن نطلع رسالة تشجيعية (Toast) هنا
+        // alert("أداء عظيم! قفلت اليوم 💯");
+    }
+}
+
+function checkWeeklyReport(day) {
+    // دالة تجيب داتا الـ 7 أيام اللي فاتوا
+    const db = firebase.database();
+    const startDay = day - 6;
+    let totalScore = 0;
+    let daysLoaded = 0;
+
+    for(let i = startDay; i <= day; i++) {
+        db.ref(`users/${currentFirebaseUser.uid}/ramadanData/day${i}`).once('value', (snap) => {
+            const d = snap.val() || {};
+            // حسبة بسيطة للإنجاز (ممكن تكون أدق)
+            let dailyTasks = 0;
+            if(d.prayers) dailyTasks += Object.keys(d.prayers).length; // عدد الصلوات اللي صلاها
+            if(d.quran) dailyTasks += 1;
+            
+            totalScore += dailyTasks;
+            daysLoaded++;
+
+            if(daysLoaded === 7) {
+                // عرض التقرير
+                alert(`📊 تقرير الأسبوع (${startDay}-${day}):\nإجمالي إنجازك: ${totalScore} مهمة عبادية.\nاستمر يا بطل!`);
+            }
+        });
+    }
+}
+
+// --- إعدادات النوافل ---
 window.toggleSettingsModal = function() {
     const modal = document.getElementById('settings-modal');
     modal.classList.toggle('hidden');
@@ -243,46 +361,27 @@ window.toggleSettingsModal = function() {
 
 function renderSettingsList() {
     const list = document.getElementById('settings-list');
-    list.innerHTML = flexibleHabits.map((h, idx) => `
+    list.innerHTML = HABITS_TEMPLATE.map((h, idx) => {
+        const isActive = userSettings[h.id] !== false;
+        return `
         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg mb-2">
             <div class="flex items-center gap-3">
                 <i data-lucide="${h.icon}" class="w-5 h-5 text-gray-500"></i>
                 <span class="font-semibold text-gray-700">${h.name}</span>
             </div>
             <label class="toggle-switch">
-                <input type="checkbox" ${h.active ? 'checked' : ''} onchange="updateHabitSettings(${idx}, this.checked)">
+                <input type="checkbox" ${isActive ? 'checked' : ''} onchange="updateHabitSettings('${h.id}', this.checked)">
                 <span class="slider"></span>
             </label>
         </div>
-    `).join('');
+    `}).join('');
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-window.updateHabitSettings = function(index, isActive) {
-    flexibleHabits[index].active = isActive;
-    // حفظ الإعدادات في فايربيس
+window.updateHabitSettings = function(habitId, isActive) {
+    userSettings[habitId] = isActive;
     if (currentFirebaseUser) {
-        firebase.database().ref(`users/${currentFirebaseUser.uid}/ramadanSettings/${flexibleHabits[index].id}`).set(isActive);
+        firebase.database().ref(`users/${currentFirebaseUser.uid}/ramadanSettings/${habitId}`).set(isActive);
     }
-    // تحديث الواجهة الخلفية (لو قفلنا النافذة)
-    renderRamadanUI();
-}
-
-function calculateProgress() {
-    const activeFlexible = flexibleHabits.filter(h => h.active);
-    const totalTasks = prayers.length + 1 + activeFlexible.length;
-    
-    const completedPrayers = prayers.filter(p => p.checked).length;
-    const completedQuran = quranWird.checked ? 1 : 0;
-    const completedFlexible = activeFlexible.filter(h => h.checked).length;
-    
-    const totalCompleted = completedPrayers + completedQuran + completedFlexible;
-    const percent = Math.round((totalCompleted / totalTasks) * 100);
-
-    document.getElementById('progress-bar').style.width = `${percent}%`;
-    document.getElementById('progress-percent').innerText = `${percent}%`;
-    
-    const textEl = document.getElementById('progress-text');
-    if (percent === 100) textEl.innerText = "ما شاء الله! يومك كامل 🌟";
-    else textEl.innerText = `فاضلك ${totalTasks - totalCompleted} خطوات 💪`;
+    renderRamadanUI(); // تحديث الواجهة فوراً
 }
